@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{block title}Smart Funds Admin{/block}</title>
+</head>
+<body>
+    <header>
+        <h1>Smart Funds Admin</h1>
+    </header>
+
+    <nav>
+        <ul>
+            <li><a n:href="Dashboard:default">Dashboard</a></li>
+            <li><a n:href="Fund:default">Fondy</a></li>
+            <li><a n:href="Investor:default">Investoři</a></li>
+            <li><a n:href="Transaction:default">Transakce</a></li>
+        </ul>
+    </nav>
+
+    <main>
+        {block content}{/block}
+    </main>
+</body>
+</html>

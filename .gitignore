@@ -1,0 +1,9 @@
+/vendor/
+/log/*
+!/log/.gitkeep
+/temp/*
+!/temp/.gitkeep
+/config/local.neon
+.idea/
+.vscode/
+*.DS_Store

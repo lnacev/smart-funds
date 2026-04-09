@@ -1,0 +1,13 @@
+services:
+    # Routing — router musí být pojmenovaná služba 'router'
+    router: App\Infrastructure\RouterFactory::createRouter
+
+    # Repositories (Infrastructure → Domain interfaces)
+    - App\Infrastructure\Database\FundRepository
+    - App\Infrastructure\Database\InvestorRepository
+    - App\Infrastructure\Database\TransactionRepository
+
+    # Application services
+    - App\Application\Fund\FundService
+    - App\Application\Investor\InvestorService
+    - App\Application\Transaction\TransactionService
