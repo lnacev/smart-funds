@@ -72,11 +72,16 @@ DB credentials: `config/local.neon` (gitignored).
 
 | Soubor | Účel |
 |--------|------|
-| `Dockerfile` | php:8.5-apache + extensions (pdo_mysql, intl) + Composer |
+| `Dockerfile` | php:8.5-apache + extensions (pdo_mysql, intl, unzip, git) + Composer |
 | `docker-compose.yml` | Services: app (8080), db MariaDB (3306), adminer (8081) |
 | `.env.docker` | DB credentials pro Docker (gitignored) |
 | `docker/apache/vhost.conf` | Apache VirtualHost → DocumentRoot www/ |
 | `docker/php/php.ini` | Dev overrides (display_errors, memory_limit 256M) |
+
+## Docker — gotcha
+
+- `vendor/` je gitignored — po prvním `docker compose up -d` spustit: `docker compose exec app composer install`
+- Dockerfile potřebuje `unzip` a `git` pro Composer (již přidáno) — bez nich `composer install` selže
 
 ## Klíčové soubory
 
@@ -103,4 +108,3 @@ DB credentials: `config/local.neon` (gitignored).
 - Business logika (services jsou připraveny, ale prázdné)
 - DB schéma / migrace
 - Frontend CSS/JS
-- Docker setup (design schválen, čeká na implementaci — viz `docs/superpowers/specs/2026-04-09-docker-setup-design.md`)
