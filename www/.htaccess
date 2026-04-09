@@ -1,0 +1,9 @@
+# Nette: hide sensitive files
+<FilesMatch "(^#.*#|\.(bak|conf|dist|fla|ini|log|orig|phtml|psd|sh|sql|sw[op])|~)$">
+    Require all denied
+</FilesMatch>
+
+RewriteEngine On
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule !\.(pdf|js|ico|gif|jpg|png|css|rar|zip|tar\.gz|webp|svg|woff2?)$ index.php [L]
