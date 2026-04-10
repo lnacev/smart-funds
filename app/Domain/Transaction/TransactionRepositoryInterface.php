@@ -12,4 +12,6 @@ interface TransactionRepositoryInterface
     public function findById(int $id): ?Transaction;
 
     public function save(Transaction $transaction): void;
+
+    public function delete(int $id): void;
 }
