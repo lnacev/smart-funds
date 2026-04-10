@@ -28,14 +28,14 @@
             <td class="text-end">
                 <button type="button" class="btn btn-sm btn-outline-primary"
                         data-fund-id="{$fund->id}"
-                        data-fund-name="{$fund->name|escapeHtmlAttr}"
+                        data-fund-name="{$fund->name}"
                         onclick="openFundModal(this)">
                     Upravit
                 </button>
                 <button type="button" class="btn btn-sm btn-outline-danger"
                         data-id="{$fund->id}"
-                        data-name="{$fund->name|escapeHtmlAttr}"
-                        data-delete-url="{link handleDelete!, id: $fund->id}"
+                        data-name="{$fund->name}"
+                        data-delete-url="{link delete!, id: $fund->id}"
                         onclick="openDeleteModal(this)">
                     Smazat
                 </button>
