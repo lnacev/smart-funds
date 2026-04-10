@@ -53,9 +53,8 @@ final class TransactionPresenter extends BaseAdminPresenter
         $form->addSelect('investor_id', 'Investor', $investorOptions)
             ->setPrompt('— vyberte investora —')
             ->setRequired('Vyberte investora.');
-        $form->addText('amount', 'Částka')
-            ->setRequired('Zadejte částku.')
-            ->addRule(Form::Float, 'Částka musí být číslo.');
+        $form->addFloat('amount', 'Částka')
+            ->setRequired('Zadejte částku.');
         $form->addSubmit('save', 'Uložit')
             ->setHtmlAttribute('class', 'btn btn-primary');
         $form->getElementPrototype()->addClass('ajax');

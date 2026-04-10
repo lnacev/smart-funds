@@ -1,3 +1,4 @@
+{layout '../@layout.latte'}
 {block content}
 
 <div class="d-flex justify-content-between align-items-center mb-3">
@@ -102,8 +103,8 @@ function openTransactionModal(btn) {
     const form = modal.querySelector('form');
     document.getElementById('transactionModalLabel').textContent = id ? 'Upravit transakci' : 'Nová transakce';
     form.querySelector('[name="id"]').value = id ?? '';
-    if (fundId) form.querySelector('[name="fund_id"]').value = fundId;
-    if (investorId) form.querySelector('[name="investor_id"]').value = investorId;
+    form.querySelector('[name="fund_id"]').value = fundId ?? '';
+    form.querySelector('[name="investor_id"]').value = investorId ?? '';
     form.querySelector('[name="amount"]').value = amount ?? '';
     bootstrap.Modal.getOrCreateInstance(modal).show();
 }
