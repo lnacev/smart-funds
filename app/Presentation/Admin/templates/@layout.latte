@@ -24,9 +24,9 @@
     </main>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://unpkg.com/naja@2.4.3/dist/Naja.min.js"></script>
+    <script src="/js/naja.min.js"></script>
     <script>
-        const naja = window.naja.default;
+        const naja = window.naja;
         naja.initialize();
         naja.addEventListener('success', function (event) {
             if (event.detail.payload && event.detail.payload.closeModal) {

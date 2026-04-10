@@ -106,7 +106,7 @@ DB credentials: `config/local.neon` (gitignored).
 
 ## Nette AJAX (naja 2.x) — vzory
 
-- **Inicializace:** `const naja = window.naja.default; naja.initialize();` (UMD CDN exposes `.default`)
+- **Inicializace:** `const naja = window.naja; naja.initialize();` — UMD bundle (`Naja.js`) exponuje instanci přímo jako `window.naja` (bez `.default`); naja se servíruje lokálně z `www/js/naja.min.js` (verze 2.6.1, staženo z jsdelivr)
 - **AJAX formulář:** `$form->getElementPrototype()->addClass('ajax')` — přidá třídu na `<form>`, naja zachytí submit
 - **Snippety:** `{snippet name}...{/snippet}` v Latte + `$this->redrawControl('name')` v presenteru
 - **Payload:** `$this->payload->closeModal = true` posílá JSON payload; naja `success` event ho přečte
