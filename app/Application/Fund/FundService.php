@@ -35,4 +35,20 @@ final class FundService
 
         $this->fundRepository->save($fund);
     }
+
+    public function update(int $id, string $name): void
+    {
+        $fund = new Fund(
+            id: $id,
+            name: $name,
+            createdAt: new \DateTimeImmutable(),
+        );
+
+        $this->fundRepository->save($fund);
+    }
+
+    public function delete(int $id): void
+    {
+        $this->fundRepository->delete($id);
+    }
 }

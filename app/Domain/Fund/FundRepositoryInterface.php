@@ -12,4 +12,6 @@ interface FundRepositoryInterface
     public function findById(int $id): ?Fund;
 
     public function save(Fund $fund): void;
+
+    public function delete(int $id): void;
 }

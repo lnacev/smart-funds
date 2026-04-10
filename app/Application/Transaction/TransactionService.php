@@ -37,4 +37,22 @@ final class TransactionService
 
         $this->transactionRepository->save($transaction);
     }
+
+    public function update(int $id, int $fundId, int $investorId, float $amount): void
+    {
+        $transaction = new Transaction(
+            id: $id,
+            fundId: $fundId,
+            investorId: $investorId,
+            amount: $amount,
+            createdAt: new \DateTimeImmutable(),
+        );
+
+        $this->transactionRepository->save($transaction);
+    }
+
+    public function delete(int $id): void
+    {
+        $this->transactionRepository->delete($id);
+    }
 }
