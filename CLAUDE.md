@@ -116,6 +116,7 @@ DB credentials: `config/local.neon` (gitignored).
 - **`escapeHtmlAttr` neexistuje:** Latte 3 nemá tento filtr — v atributu stačí `{$var}`, auto-escaping se postará o správné escapování
 - **Číselné pole:** `$form->addFloat('field', 'Label')` místo `addText()` + `Form::Float` pravidla
 - **Repository save():** `created_at` pouze v INSERT větvi, ne v UPDATE — jinak přepisuje originální datum
+- **Signály v Latte:** `{link delete!, id: $id}` — název signálu BEZ prefixu `handle`; metoda `handleDelete()` = signál `delete` (jinak Nette hledá `handlehandleDelete` → Tracy error)
 
 ## DB schéma
 
