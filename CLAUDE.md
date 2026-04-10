@@ -112,7 +112,8 @@ DB credentials: `config/local.neon` (gitignored).
 - **Payload:** `$this->payload->closeModal = true` posílá JSON payload; naja `success` event ho přečte
 - **Chyba formuláře:** v `$form->onError[]` zavolat `$this->redrawControl('modal')` pro překreslení modalu s chybami
 - **Bootstrap Modal:** použít `bootstrap.Modal.getOrCreateInstance(el).show()` — ne `new bootstrap.Modal(el)`
-- **XSS v onclick:** nikdy `{$var|json}` v HTML atributu — vždy `data-*="{$var|escapeHtmlAttr}"` + čtení přes `btn.dataset.*`
+- **XSS v onclick:** nikdy `{$var|json}` v HTML atributu — vždy `data-*="{$var}"` + čtení přes `btn.dataset.*` (Latte 3 auto-escapuje dle kontextu)
+- **`escapeHtmlAttr` neexistuje:** Latte 3 nemá tento filtr — v atributu stačí `{$var}`, auto-escaping se postará o správné escapování
 - **Číselné pole:** `$form->addFloat('field', 'Label')` místo `addText()` + `Form::Float` pravidla
 - **Repository save():** `created_at` pouze v INSERT větvi, ne v UPDATE — jinak přepisuje originální datum
 
