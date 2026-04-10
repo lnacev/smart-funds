@@ -3,8 +3,7 @@
 <div class="d-flex justify-content-between align-items-center mb-3">
     <h2>Fondy</h2>
     <button type="button" class="btn btn-primary"
-            data-bs-toggle="modal" data-bs-target="#fundModal"
-            onclick="openFundModal(null, '')">
+            onclick="openFundModal(null)">
         + Přidat fond
     </button>
 </div>
@@ -27,8 +26,9 @@
             <td>{$fund->created_at|date:'j. n. Y'}</td>
             <td class="text-end">
                 <button type="button" class="btn btn-sm btn-outline-primary"
-                        data-bs-toggle="modal" data-bs-target="#fundModal"
-                        onclick="openFundModal({$fund->id}, {$fund->name|json})">
+                        data-fund-id="{$fund->id}"
+                        data-fund-name="{$fund->name|escapeHtmlAttr}"
+                        onclick="openFundModal(this)">
                     Upravit
                 </button>
                 <button type="button" class="btn btn-sm btn-outline-danger"
@@ -78,7 +78,7 @@
             <div class="modal-footer">
                 <form id="deleteForm" method="post" class="ajax">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Zrušit</button>
-                    <button type="submit" class="btn btn-danger">Smazat</button>
+                    <button type="submit" class="btn btn-danger" id="deleteSubmit" disabled>Smazat</button>
                 </form>
             </div>
         </div>
@@ -89,20 +89,23 @@
 
 {block scripts}
 <script>
-function openFundModal(id, name) {
+function openFundModal(btn) {
+    const id = btn ? btn.dataset.fundId : null;
+    const name = btn ? btn.dataset.fundName : '';
     const modal = document.getElementById('fundModal');
     const form = modal.querySelector('form');
     document.getElementById('fundModalLabel').textContent = id ? 'Upravit fond' : 'Nový fond';
     form.querySelector('[name="id"]').value = id ?? '';
     form.querySelector('[name="name"]').value = name ?? '';
-    new bootstrap.Modal(modal).show();
+    bootstrap.Modal.getOrCreateInstance(modal).show();
 }
 
 function openDeleteModal(btn) {
     document.getElementById('deleteFundName').textContent = btn.dataset.name;
     const form = document.getElementById('deleteForm');
     form.action = btn.dataset.deleteUrl;
-    new bootstrap.Modal(document.getElementById('deleteModal')).show();
+    document.getElementById('deleteSubmit').disabled = false;
+    bootstrap.Modal.getOrCreateInstance(document.getElementById('deleteModal')).show();
 }
 </script>
 {/block}
