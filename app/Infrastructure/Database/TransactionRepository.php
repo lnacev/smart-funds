@@ -43,17 +43,19 @@ final class TransactionRepository implements TransactionRepositoryInterface
 
     public function save(Transaction $transaction): void
     {
-        $data = [
-            'fund_id' => $transaction->fundId,
-            'investor_id' => $transaction->investorId,
-            'amount' => $transaction->amount,
-            'created_at' => $transaction->createdAt->format('Y-m-d H:i:s'),
-        ];
-
         if ($transaction->id === null) {
-            $this->database->table('transactions')->insert($data);
+            $this->database->table('transactions')->insert([
+                'fund_id' => $transaction->fundId,
+                'investor_id' => $transaction->investorId,
+                'amount' => $transaction->amount,
+                'created_at' => $transaction->createdAt->format('Y-m-d H:i:s'),
+            ]);
         } else {
-            $this->database->table('transactions')->get($transaction->id)?->update($data);
+            $this->database->table('transactions')->get($transaction->id)?->update([
+                'fund_id' => $transaction->fundId,
+                'investor_id' => $transaction->investorId,
+                'amount' => $transaction->amount,
+            ]);
         }
     }
 

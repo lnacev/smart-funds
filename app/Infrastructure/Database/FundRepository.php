@@ -41,15 +41,15 @@ final class FundRepository implements FundRepositoryInterface
 
     public function save(Fund $fund): void
     {
-        $data = [
-            'name' => $fund->name,
-            'created_at' => $fund->createdAt->format('Y-m-d H:i:s'),
-        ];
-
         if ($fund->id === null) {
-            $this->database->table('funds')->insert($data);
+            $this->database->table('funds')->insert([
+                'name' => $fund->name,
+                'created_at' => $fund->createdAt->format('Y-m-d H:i:s'),
+            ]);
         } else {
-            $this->database->table('funds')->get($fund->id)?->update($data);
+            $this->database->table('funds')->get($fund->id)?->update([
+                'name' => $fund->name,
+            ]);
         }
     }
 
