@@ -98,11 +98,23 @@ DB credentials: `config/local.neon` (gitignored).
 ## Nette konvence (důležité)
 
 - **Links v Latte:** relativní `Presenter:action`, absolutní cross-module `:Module:Presenter:action`
-- **Blocks:** layout má `{block content}{/block}`, child šablony ho vyplní `{block content}...{/block}`
+- **Blocks:** layout má `{block content}{/block}`, child šablony ho vyplní `{block content}...{/block}`; **child šablona musí začínat `{layout '../@layout.latte'}`** — bez toho se layout vůbec nenačte
 - **Router:** registrován jako pojmenovaná služba `router:` v `services.neon`
 - **DB config:** `common.neon` includuje `services.neon`; `local.neon` má `convertBoolean: true`, `newDateTime: true`
 - **Presentery:** konstruktor bez `parent::__construct()`, DI přes constructor injection
 - **Docker DB host:** v `config/local.neon` použít `host=db` (název Docker service)
+
+## Nette AJAX (naja 2.x) — vzory
+
+- **Inicializace:** `const naja = window.naja.default; naja.initialize();` (UMD CDN exposes `.default`)
+- **AJAX formulář:** `$form->getElementPrototype()->addClass('ajax')` — přidá třídu na `<form>`, naja zachytí submit
+- **Snippety:** `{snippet name}...{/snippet}` v Latte + `$this->redrawControl('name')` v presenteru
+- **Payload:** `$this->payload->closeModal = true` posílá JSON payload; naja `success` event ho přečte
+- **Chyba formuláře:** v `$form->onError[]` zavolat `$this->redrawControl('modal')` pro překreslení modalu s chybami
+- **Bootstrap Modal:** použít `bootstrap.Modal.getOrCreateInstance(el).show()` — ne `new bootstrap.Modal(el)`
+- **XSS v onclick:** nikdy `{$var|json}` v HTML atributu — vždy `data-*="{$var|escapeHtmlAttr}"` + čtení přes `btn.dataset.*`
+- **Číselné pole:** `$form->addFloat('field', 'Label')` místo `addText()` + `Form::Float` pravidla
+- **Repository save():** `created_at` pouze v INSERT větvi, ne v UPDATE — jinak přepisuje originální datum
 
 ## DB schéma
 
@@ -113,6 +125,6 @@ DB credentials: `config/local.neon` (gitignored).
 ## Co zatím není implementováno
 
 - Autentizace (stub `checkRequirements()` v BaseAdminPresenter a BaseInvestorPresenter)
-- Business logika (services jsou připraveny, ale prázdné)
-- Frontend CSS/JS
-- Latte šablony pro Fund, Investor, Transaction (CRUD views)
+- CSRF ochrana delete signálů (plain HTML formuláře bez Nette Form nemají token — přidat s autentizací)
+- Investor dashboard (vlastní data investora)
+- Frontend CSS pro Front a Investor modul
