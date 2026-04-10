@@ -1,0 +1,7 @@
+database:
+    dsn: 'mysql:host=db;dbname=smartfunds'
+    user: smartfunds
+    password: secret
+    options:
+        convertBoolean: true
+        newDateTime: true

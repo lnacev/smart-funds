@@ -91,6 +91,8 @@ DB credentials: `config/local.neon` (gitignored).
 | `config/common.neon` | App mapping, session; includuje services.neon |
 | `config/services.neon` | DI binding: router, repositories, services |
 | `config/local.neon` | DB credentials + options (gitignored) |
+| `config/local.neon.example` | Template pro local.neon (zkopírovat a doplnit credentials) |
+| `db/schema.sql` | DDL schéma: tabulky funds, investors, transactions |
 | `app/Infrastructure/RouterFactory.php` | Definice URL rout |
 
 ## Nette konvence (důležité)
@@ -102,9 +104,15 @@ DB credentials: `config/local.neon` (gitignored).
 - **Presentery:** konstruktor bez `parent::__construct()`, DI přes constructor injection
 - **Docker DB host:** v `config/local.neon` použít `host=db` (název Docker service)
 
+## DB schéma
+
+- Soubor: `db/schema.sql` — tabulky `funds`, `investors`, `transactions` (MariaDB InnoDB, utf8mb4)
+- Docker auto-import: `./db` je namountován jako `/docker-entrypoint-initdb.d` — spustí se při **prvním** startu (prázdný volume)
+- Ruční import do existujícího volume: `docker compose exec -T db mariadb -u USER -pPASS DBNAME < db/schema.sql`
+
 ## Co zatím není implementováno
 
 - Autentizace (stub `checkRequirements()` v BaseAdminPresenter a BaseInvestorPresenter)
 - Business logika (services jsou připraveny, ale prázdné)
-- DB schéma / migrace
 - Frontend CSS/JS
+- Latte šablony pro Fund, Investor, Transaction (CRUD views)
