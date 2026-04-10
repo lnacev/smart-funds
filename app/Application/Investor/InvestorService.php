@@ -36,4 +36,21 @@ final class InvestorService
 
         $this->investorRepository->save($investor);
     }
+
+    public function update(int $id, string $name, string $email): void
+    {
+        $investor = new Investor(
+            id: $id,
+            name: $name,
+            email: $email,
+            createdAt: new \DateTimeImmutable(),
+        );
+
+        $this->investorRepository->save($investor);
+    }
+
+    public function delete(int $id): void
+    {
+        $this->investorRepository->delete($id);
+    }
 }
