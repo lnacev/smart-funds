@@ -56,4 +56,9 @@ final class TransactionRepository implements TransactionRepositoryInterface
             $this->database->table('transactions')->get($transaction->id)?->update($data);
         }
     }
+
+    public function delete(int $id): void
+    {
+        $this->database->table('transactions')->get($id)?->delete();
+    }
 }

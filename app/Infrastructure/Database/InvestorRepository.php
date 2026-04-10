@@ -54,4 +54,9 @@ final class InvestorRepository implements InvestorRepositoryInterface
             $this->database->table('investors')->get($investor->id)?->update($data);
         }
     }
+
+    public function delete(int $id): void
+    {
+        $this->database->table('investors')->get($id)?->delete();
+    }
 }

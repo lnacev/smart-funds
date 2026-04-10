@@ -52,4 +52,9 @@ final class FundRepository implements FundRepositoryInterface
             $this->database->table('funds')->get($fund->id)?->update($data);
         }
     }
+
+    public function delete(int $id): void
+    {
+        $this->database->table('funds')->get($id)?->delete();
+    }
 }
