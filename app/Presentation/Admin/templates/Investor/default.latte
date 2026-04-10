@@ -1,0 +1,115 @@
+{layout '../@layout.latte'}
+{block content}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h2>Investoři</h2>
+    <button type="button" class="btn btn-primary"
+            onclick="openInvestorModal(null)">
+        + Přidat investora
+    </button>
+</div>
+
+{snippet list}
+<table class="table table-striped table-bordered">
+    <thead class="table-dark">
+        <tr>
+            <th>#</th>
+            <th>Jméno</th>
+            <th>E-mail</th>
+            <th>Vytvořeno</th>
+            <th class="text-end">Akce</th>
+        </tr>
+    </thead>
+    <tbody>
+        {foreach $investors as $investor}
+        <tr>
+            <td>{$investor->id}</td>
+            <td>{$investor->name}</td>
+            <td>{$investor->email}</td>
+            <td>{$investor->created_at|date:'j. n. Y'}</td>
+            <td class="text-end">
+                <button type="button" class="btn btn-sm btn-outline-primary"
+                        data-investor-id="{$investor->id}"
+                        data-investor-name="{$investor->name|escapeHtmlAttr}"
+                        data-investor-email="{$investor->email|escapeHtmlAttr}"
+                        onclick="openInvestorModal(this)">
+                    Upravit
+                </button>
+                <button type="button" class="btn btn-sm btn-outline-danger"
+                        data-id="{$investor->id}"
+                        data-name="{$investor->name|escapeHtmlAttr}"
+                        data-delete-url="{link handleDelete!, id: $investor->id}"
+                        onclick="openDeleteModal(this)">
+                    Smazat
+                </button>
+            </td>
+        </tr>
+        {else}
+        <tr><td colspan="5" class="text-center text-muted">Žádní investoři</td></tr>
+        {/foreach}
+    </tbody>
+</table>
+{/snippet}
+
+{snippet modal}
+<div class="modal fade" id="investorModal" tabindex="-1" aria-labelledby="investorModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="investorModalLabel">Investor</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                {control investorForm}
+            </div>
+        </div>
+    </div>
+</div>
+{/snippet}
+
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title text-danger">Smazat investora</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Opravdu chcete smazat investora <strong id="deleteInvestorName"></strong>? Tuto akci nelze vrátit.</p>
+            </div>
+            <div class="modal-footer">
+                <form id="deleteForm" method="post" class="ajax">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Zrušit</button>
+                    <button type="submit" class="btn btn-danger" id="deleteSubmit" disabled>Smazat</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+{/block}
+
+{block scripts}
+<script>
+function openInvestorModal(btn) {
+    const id = btn ? btn.dataset.investorId : null;
+    const name = btn ? btn.dataset.investorName : '';
+    const email = btn ? btn.dataset.investorEmail : '';
+    const modal = document.getElementById('investorModal');
+    const form = modal.querySelector('form');
+    document.getElementById('investorModalLabel').textContent = id ? 'Upravit investora' : 'Nový investor';
+    form.querySelector('[name="id"]').value = id ?? '';
+    form.querySelector('[name="name"]').value = name ?? '';
+    form.querySelector('[name="email"]').value = email ?? '';
+    bootstrap.Modal.getOrCreateInstance(modal).show();
+}
+
+function openDeleteModal(btn) {
+    document.getElementById('deleteInvestorName').textContent = btn.dataset.name;
+    const form = document.getElementById('deleteForm');
+    form.action = btn.dataset.deleteUrl;
+    document.getElementById('deleteSubmit').disabled = false;
+    bootstrap.Modal.getOrCreateInstance(document.getElementById('deleteModal')).show();
+}
+</script>
+{/block}

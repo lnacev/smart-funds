@@ -1,0 +1,120 @@
+{layout '../@layout.latte'}
+{block content}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h2>Transakce</h2>
+    <button type="button" class="btn btn-primary"
+            onclick="openTransactionModal(null)">
+        + Přidat transakci
+    </button>
+</div>
+
+{snippet list}
+<table class="table table-striped table-bordered">
+    <thead class="table-dark">
+        <tr>
+            <th>#</th>
+            <th>Fond</th>
+            <th>Investor</th>
+            <th>Částka</th>
+            <th>Datum</th>
+            <th class="text-end">Akce</th>
+        </tr>
+    </thead>
+    <tbody>
+        {foreach $transactions as $tx}
+        <tr>
+            <td>{$tx->id}</td>
+            <td>{isset($selectFunds[$tx->fund_id]) ? $selectFunds[$tx->fund_id] : $tx->fund_id}</td>
+            <td>{isset($selectInvestors[$tx->investor_id]) ? $selectInvestors[$tx->investor_id] : $tx->investor_id}</td>
+            <td>{$tx->amount|number:2} Kč</td>
+            <td>{$tx->created_at|date:'j. n. Y'}</td>
+            <td class="text-end">
+                <button type="button" class="btn btn-sm btn-outline-primary"
+                        data-tx-id="{$tx->id}"
+                        data-tx-fund-id="{$tx->fund_id}"
+                        data-tx-investor-id="{$tx->investor_id}"
+                        data-tx-amount="{$tx->amount}"
+                        onclick="openTransactionModal(this)">
+                    Upravit
+                </button>
+                <button type="button" class="btn btn-sm btn-outline-danger"
+                        data-id="{$tx->id}"
+                        data-name="transakci #{$tx->id}"
+                        data-delete-url="{link handleDelete!, id: $tx->id}"
+                        onclick="openDeleteModal(this)">
+                    Smazat
+                </button>
+            </td>
+        </tr>
+        {else}
+        <tr><td colspan="6" class="text-center text-muted">Žádné transakce</td></tr>
+        {/foreach}
+    </tbody>
+</table>
+{/snippet}
+
+{snippet modal}
+<div class="modal fade" id="transactionModal" tabindex="-1" aria-labelledby="transactionModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="transactionModalLabel">Transakce</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                {control transactionForm}
+            </div>
+        </div>
+    </div>
+</div>
+{/snippet}
+
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title text-danger">Smazat transakci</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Opravdu chcete smazat <strong id="deleteTransactionName"></strong>? Tuto akci nelze vrátit.</p>
+            </div>
+            <div class="modal-footer">
+                <form id="deleteForm" method="post" class="ajax">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Zrušit</button>
+                    <button type="submit" class="btn btn-danger" id="deleteSubmit" disabled>Smazat</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+{/block}
+
+{block scripts}
+<script>
+function openTransactionModal(btn) {
+    const id = btn ? btn.dataset.txId : null;
+    const fundId = btn ? btn.dataset.txFundId : null;
+    const investorId = btn ? btn.dataset.txInvestorId : null;
+    const amount = btn ? btn.dataset.txAmount : '';
+    const modal = document.getElementById('transactionModal');
+    const form = modal.querySelector('form');
+    document.getElementById('transactionModalLabel').textContent = id ? 'Upravit transakci' : 'Nová transakce';
+    form.querySelector('[name="id"]').value = id ?? '';
+    form.querySelector('[name="fund_id"]').value = fundId ?? '';
+    form.querySelector('[name="investor_id"]').value = investorId ?? '';
+    form.querySelector('[name="amount"]').value = amount ?? '';
+    bootstrap.Modal.getOrCreateInstance(modal).show();
+}
+
+function openDeleteModal(btn) {
+    document.getElementById('deleteTransactionName').textContent = btn.dataset.name;
+    const form = document.getElementById('deleteForm');
+    form.action = btn.dataset.deleteUrl;
+    document.getElementById('deleteSubmit').disabled = false;
+    bootstrap.Modal.getOrCreateInstance(document.getElementById('deleteModal')).show();
+}
+</script>
+{/block}

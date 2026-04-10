@@ -1,0 +1,12 @@
+includes:
+    - services.neon
+
+application:
+    errorPresenter: Front:Error
+    mapping:
+        Admin: App\Presentation\Admin\Presenters\*Presenter
+        Investor: App\Presentation\Investor\Presenters\*Presenter
+        Front: App\Presentation\Front\Presenters\*Presenter
+
+session:
+    expiration: 14 days
