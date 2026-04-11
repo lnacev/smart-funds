@@ -40,20 +40,24 @@ final class InvestorRepository implements InvestorRepositoryInterface
         );
     }
 
-    public function save(Investor $investor): void
+    public function save(Investor $investor): int
     {
         if ($investor->id === null) {
-            $this->database->table('investors')->insert([
-                'name' => $investor->name,
-                'email' => $investor->email,
+            $row = $this->database->table('investors')->insert([
+                'name'       => $investor->name,
+                'email'      => $investor->email,
                 'created_at' => $investor->createdAt->format('Y-m-d H:i:s'),
             ]);
-        } else {
-            $this->database->table('investors')->get($investor->id)?->update([
-                'name' => $investor->name,
-                'email' => $investor->email,
-            ]);
+
+            return (int) $row->id;
         }
+
+        $this->database->table('investors')->get($investor->id)?->update([
+            'name'  => $investor->name,
+            'email' => $investor->email,
+        ]);
+
+        return $investor->id;
     }
 
     public function delete(int $id): void

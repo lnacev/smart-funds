@@ -38,7 +38,6 @@
                 <button type="button" class="btn btn-sm btn-outline-danger"
                         data-id="{$investor->id}"
                         data-name="{$investor->name}"
-                        data-delete-url="{link delete!, id: $investor->id}"
                         onclick="openDeleteModal(this)">
                     Smazat
                 </button>
@@ -78,10 +77,8 @@
                 <p>Opravdu chcete smazat investora <strong id="deleteInvestorName"></strong>? Tuto akci nelze vrátit.</p>
             </div>
             <div class="modal-footer">
-                <form id="deleteForm" method="post" class="ajax">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Zrušit</button>
-                    <button type="submit" class="btn btn-danger" id="deleteSubmit" disabled>Smazat</button>
-                </form>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Zrušit</button>
+                {control deleteForm}
             </div>
         </div>
     </div>
@@ -101,14 +98,17 @@ function openInvestorModal(btn) {
     form.querySelector('[name="id"]').value = id ?? '';
     form.querySelector('[name="name"]').value = name ?? '';
     form.querySelector('[name="email"]').value = email ?? '';
+    const pwdInput = form.querySelector('[name="password"]');
+    if (pwdInput) {
+        const pwdRow = pwdInput.closest('p') || pwdInput.parentElement;
+        if (pwdRow) pwdRow.style.display = id ? 'none' : '';
+    }
     bootstrap.Modal.getOrCreateInstance(modal).show();
 }
 
 function openDeleteModal(btn) {
     document.getElementById('deleteInvestorName').textContent = btn.dataset.name;
-    const form = document.getElementById('deleteForm');
-    form.action = btn.dataset.deleteUrl;
-    document.getElementById('deleteSubmit').disabled = false;
+    document.querySelector('#deleteModal [name="id"]').value = btn.dataset.id;
     bootstrap.Modal.getOrCreateInstance(document.getElementById('deleteModal')).show();
 }
 </script>

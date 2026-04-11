@@ -11,7 +11,7 @@ interface InvestorRepositoryInterface
 
     public function findById(int $id): ?Investor;
 
-    public function save(Investor $investor): void;
+    public function save(Investor $investor): int;
 
     public function delete(int $id): void;
 }

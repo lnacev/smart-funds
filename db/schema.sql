@@ -21,3 +21,13 @@ CREATE TABLE transactions (
     CONSTRAINT fk_transactions_fund     FOREIGN KEY (fund_id)     REFERENCES funds(id),
     CONSTRAINT fk_transactions_investor FOREIGN KEY (investor_id) REFERENCES investors(id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE users (
+    id            INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    email         VARCHAR(255) NOT NULL UNIQUE,
+    password_hash VARCHAR(255) NOT NULL,
+    role          ENUM('admin', 'investor') NOT NULL,
+    investor_id   INT UNSIGNED NULL,
+    created_at    DATETIME NOT NULL,
+    CONSTRAINT fk_users_investor FOREIGN KEY (investor_id) REFERENCES investors(id) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

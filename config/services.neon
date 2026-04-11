@@ -6,8 +6,11 @@ services:
     - App\Infrastructure\Database\FundRepository
     - App\Infrastructure\Database\InvestorRepository
     - App\Infrastructure\Database\TransactionRepository
+    - App\Infrastructure\Database\UserRepository
 
     # Application services
     - App\Application\Fund\FundService
     - App\Application\Investor\InvestorService
     - App\Application\Transaction\TransactionService
+    - App\Application\User\UserService
+    - App\Application\User\Authenticator

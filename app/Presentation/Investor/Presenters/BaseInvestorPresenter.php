@@ -11,6 +11,8 @@ abstract class BaseInvestorPresenter extends Presenter
     public function checkRequirements(mixed $element): void
     {
         parent::checkRequirements($element);
-        // TODO: add investor authentication check here
+        if (!$this->getUser()->isLoggedIn() || !$this->getUser()->isInRole('investor')) {
+            $this->redirect(':Front:Sign:in');
+        }
     }
 }

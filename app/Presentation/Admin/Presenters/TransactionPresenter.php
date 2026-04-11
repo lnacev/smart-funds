@@ -25,21 +25,6 @@ final class TransactionPresenter extends BaseAdminPresenter
         $this->template->selectInvestors = $this->buildSelectOptions($this->investorService->getAll(), 'name');
     }
 
-    public function handleDelete(int $id): void
-    {
-        $this->transactionService->delete($id);
-
-        if ($this->isAjax()) {
-            $this->template->transactions = $this->transactionService->getAll();
-            $this->template->selectFunds = $this->buildSelectOptions($this->fundService->getAll(), 'name');
-            $this->template->selectInvestors = $this->buildSelectOptions($this->investorService->getAll(), 'name');
-            $this->redrawControl('list');
-            $this->payload->closeModal = true;
-        } else {
-            $this->redirect('default');
-        }
-    }
-
     protected function createComponentTransactionForm(): Form
     {
         $fundOptions = $this->buildSelectOptions($this->fundService->getAll(), 'name');
@@ -89,6 +74,33 @@ final class TransactionPresenter extends BaseAdminPresenter
         $form->onError[] = function (Form $form): void {
             if ($this->isAjax()) {
                 $this->redrawControl('modal');
+            }
+        };
+
+        return $form;
+    }
+
+    protected function createComponentDeleteForm(): Form
+    {
+        $form = new Form;
+        $form->addProtection();
+        $form->addHidden('id');
+        $form->addSubmit('delete', 'Smazat')
+            ->setHtmlAttribute('class', 'btn btn-danger')
+            ->setHtmlAttribute('id', 'deleteSubmit');
+        $form->getElementPrototype()->addClass('ajax');
+
+        $form->onSuccess[] = function (Form $form, \stdClass $values): void {
+            $this->transactionService->delete((int) $values->id);
+
+            if ($this->isAjax()) {
+                $this->template->transactions = $this->transactionService->getAll();
+                $this->template->selectFunds = $this->buildSelectOptions($this->fundService->getAll(), 'name');
+                $this->template->selectInvestors = $this->buildSelectOptions($this->investorService->getAll(), 'name');
+                $this->redrawControl('list');
+                $this->payload->closeModal = true;
+            } else {
+                $this->redirect('default');
             }
         };
 

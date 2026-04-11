@@ -11,6 +11,8 @@ abstract class BaseAdminPresenter extends Presenter
     public function checkRequirements(mixed $element): void
     {
         parent::checkRequirements($element);
-        // TODO: add admin authentication check here
+        if (!$this->getUser()->isLoggedIn() || !$this->getUser()->isInRole('admin')) {
+            $this->redirect(':Front:Sign:in');
+        }
     }
 }

@@ -26,6 +26,13 @@ final class RouterFactory
             'action' => 'default',
         ]);
 
+        // Sign (authentication)
+        $router->addRoute('sign/<action>', [
+            'module'    => 'Front',
+            'presenter' => 'Sign',
+            'action'    => 'in',
+        ]);
+
         // Front module (public)
         $router->addRoute('<presenter>[/<action>[/<id>]]', [
             'module' => 'Front',

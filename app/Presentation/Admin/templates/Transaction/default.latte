@@ -41,7 +41,6 @@
                 <button type="button" class="btn btn-sm btn-outline-danger"
                         data-id="{$tx->id}"
                         data-name="transakci #{$tx->id}"
-                        data-delete-url="{link delete!, id: $tx->id}"
                         onclick="openDeleteModal(this)">
                     Smazat
                 </button>
@@ -81,10 +80,8 @@
                 <p>Opravdu chcete smazat <strong id="deleteTransactionName"></strong>? Tuto akci nelze vrátit.</p>
             </div>
             <div class="modal-footer">
-                <form id="deleteForm" method="post" class="ajax">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Zrušit</button>
-                    <button type="submit" class="btn btn-danger" id="deleteSubmit" disabled>Smazat</button>
-                </form>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Zrušit</button>
+                {control deleteForm}
             </div>
         </div>
     </div>
@@ -111,9 +108,7 @@ function openTransactionModal(btn) {
 
 function openDeleteModal(btn) {
     document.getElementById('deleteTransactionName').textContent = btn.dataset.name;
-    const form = document.getElementById('deleteForm');
-    form.action = btn.dataset.deleteUrl;
-    document.getElementById('deleteSubmit').disabled = false;
+    document.querySelector('#deleteModal [name="id"]').value = btn.dataset.id;
     bootstrap.Modal.getOrCreateInstance(document.getElementById('deleteModal')).show();
 }
 </script>

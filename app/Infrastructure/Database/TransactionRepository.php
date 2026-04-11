@@ -63,4 +63,22 @@ final class TransactionRepository implements TransactionRepositoryInterface
     {
         $this->database->table('transactions')->get($id)?->delete();
     }
+
+    /** @return Transaction[] */
+    public function findByInvestorId(int $investorId): array
+    {
+        $rows = $this->database
+            ->table('transactions')
+            ->where('investor_id', $investorId)
+            ->order('created_at DESC')
+            ->fetchAll();
+
+        return array_map(fn($row) => new Transaction(
+            id:         $row->id,
+            fundId:     $row->fund_id,
+            investorId: $row->investor_id,
+            amount:     (float) $row->amount,
+            createdAt:  new \DateTimeImmutable($row->created_at),
+        ), $rows);
+    }
 }

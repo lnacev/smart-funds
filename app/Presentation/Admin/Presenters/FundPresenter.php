@@ -19,19 +19,6 @@ final class FundPresenter extends BaseAdminPresenter
         $this->template->funds = $this->fundService->getAll();
     }
 
-    public function handleDelete(int $id): void
-    {
-        $this->fundService->delete($id);
-
-        if ($this->isAjax()) {
-            $this->template->funds = $this->fundService->getAll();
-            $this->redrawControl('list');
-            $this->payload->closeModal = true;
-        } else {
-            $this->redirect('default');
-        }
-    }
-
     protected function createComponentFundForm(): Form
     {
         $form = new Form;
@@ -61,6 +48,31 @@ final class FundPresenter extends BaseAdminPresenter
         $form->onError[] = function (Form $form): void {
             if ($this->isAjax()) {
                 $this->redrawControl('modal');
+            }
+        };
+
+        return $form;
+    }
+
+    protected function createComponentDeleteForm(): Form
+    {
+        $form = new Form;
+        $form->addProtection();
+        $form->addHidden('id');
+        $form->addSubmit('delete', 'Smazat')
+            ->setHtmlAttribute('class', 'btn btn-danger')
+            ->setHtmlAttribute('id', 'deleteSubmit');
+        $form->getElementPrototype()->addClass('ajax');
+
+        $form->onSuccess[] = function (Form $form, \stdClass $values): void {
+            $this->fundService->delete((int) $values->id);
+
+            if ($this->isAjax()) {
+                $this->template->funds = $this->fundService->getAll();
+                $this->redrawControl('list');
+                $this->payload->closeModal = true;
+            } else {
+                $this->redirect('default');
             }
         };
 
