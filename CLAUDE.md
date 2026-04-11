@@ -45,6 +45,8 @@ Presentery volají pouze Application services, ne přímo repositáře.
 | `/admin/investors` | Admin | Investor |
 | `/admin/transactions` | Admin | Transaction |
 | `/investor` | Investor | Dashboard |
+| `/sign/in` | Front | Sign (login) |
+| `/sign/out` | Front | Sign (logout) |
 
 ## Spuštění (Docker)
 
@@ -82,6 +84,8 @@ DB credentials: `config/local.neon` (gitignored).
 
 - `vendor/` je gitignored — po prvním `docker compose up -d` spustit: `docker compose exec app composer install`
 - Dockerfile potřebuje `unzip` a `git` pro Composer (již přidáno) — bez nich `composer install` selže
+- Tabulka `users` se při prvním startu vytvoří automaticky z `db/schema.sql`; při existujícím volume spustit: `docker compose exec -T db mariadb -u USER -pPASS DBNAME < db/schema.sql`
+- První admin se vytvoří CLI seederem: `docker compose exec app php bin/create-admin.php email heslo`
 
 ## Klíčové soubory
 
@@ -92,8 +96,13 @@ DB credentials: `config/local.neon` (gitignored).
 | `config/services.neon` | DI binding: router, repositories, services |
 | `config/local.neon` | DB credentials + options (gitignored) |
 | `config/local.neon.example` | Template pro local.neon (zkopírovat a doplnit credentials) |
-| `db/schema.sql` | DDL schéma: tabulky funds, investors, transactions |
+| `db/schema.sql` | DDL schéma: tabulky funds, investors, transactions, users |
 | `app/Infrastructure/RouterFactory.php` | Definice URL rout |
+| `app/Domain/User/` | User entita + UserRepositoryInterface |
+| `app/Application/User/UserService.php` | Vytváření admin/investor účtů, update, delete |
+| `app/Application/User/Authenticator.php` | Nette Security authenticator (email + heslo) |
+| `app/Infrastructure/Database/UserRepository.php` | DB implementace UserRepositoryInterface |
+| `bin/create-admin.php` | CLI seeder pro prvního admina |
 
 ## Nette konvence (důležité)
 
@@ -117,16 +126,29 @@ DB credentials: `config/local.neon` (gitignored).
 - **Číselné pole:** `$form->addFloat('field', 'Label')` místo `addText()` + `Form::Float` pravidla
 - **Repository save():** `created_at` pouze v INSERT větvi, ne v UPDATE — jinak přepisuje originální datum
 - **Signály v Latte:** `{link delete!, id: $id}` — název signálu BEZ prefixu `handle`; metoda `handleDelete()` = signál `delete` (jinak Nette hledá `handlehandleDelete` → Tracy error)
+- **CSRF ochrana:** `$form->addProtection()` na Nette Form komponentě — přidá `_token_` hidden field; plain HTML form token nemá
+- **Delete s CSRF:** místo `handleDelete(int $id)` signálu použít `createComponentDeleteForm()` s `addProtection()` + `addHidden('id')` — JS nastavuje `[name="id"]` hodnotu před odesláním
+- **Nette Security role:** `$this->getUser()->isInRole('admin')` — metoda `getRole()` neexistuje, správně je `getRoles()` (vrací array) nebo `isInRole()`
+- **newDateTime: true gotcha:** s tímto nastavením vrací Nette Database datetime sloupce jako `Nette\Database\DateTime` (extends `DateTimeImmutable`) — nelze předat do `new \DateTimeImmutable($row->created_at)`, použít `\DateTimeImmutable::createFromInterface($row->created_at)`
+
+## Autentizace
+
+- **Tabulka `users`:** `id`, `email`, `password_hash`, `role` (admin|investor), `investor_id` (FK → investors), `created_at`
+- **Flow:** přihlášení na `/sign/in` → `SignPresenter` → `Nette\Security\User::login()` → redirect dle role
+- **Admin** → `:Admin:Dashboard:default`, **investor** → `:Investor:Dashboard:default`
+- **Ochrana modulů:** `checkRequirements()` v `BaseAdminPresenter` / `BaseInvestorPresenter` volá `isInRole()`
+- **Vytvoření investora:** admin vyplní jméno + email + heslo → `UserService::createInvestor()` → atomicky vytvoří `investors` + `users` záznam
+- **První admin:** `docker compose exec app php bin/create-admin.php email heslo`
 
 ## DB schéma
 
-- Soubor: `db/schema.sql` — tabulky `funds`, `investors`, `transactions` (MariaDB InnoDB, utf8mb4)
+- Soubor: `db/schema.sql` — tabulky `funds`, `investors`, `transactions`, `users` (MariaDB InnoDB, utf8mb4)
 - Docker auto-import: `./db` je namountován jako `/docker-entrypoint-initdb.d` — spustí se při **prvním** startu (prázdný volume)
 - Ruční import do existujícího volume: `docker compose exec -T db mariadb -u USER -pPASS DBNAME < db/schema.sql`
 
 ## Co zatím není implementováno
 
-- Autentizace (stub `checkRequirements()` v BaseAdminPresenter a BaseInvestorPresenter)
-- CSRF ochrana delete signálů (plain HTML formuláře bez Nette Form nemají token — přidat s autentizací)
-- Investor dashboard (vlastní data investora)
-- Frontend CSS pro Front a Investor modul
+- Změna hesla pro investora přes admin panel
+- Přiřazení user účtu k existujícímu investorskému záznamu (historická data bez účtu)
+- CSRF ochrana na front-end (delete signály jsou chráněné přes Nette Form `addProtection()`; admin modul vyžaduje přihlášení)
+- Investor dashboard — zobrazení jmen fondů čerpá z FundService (ActiveRows, ne entity) — intentionally
