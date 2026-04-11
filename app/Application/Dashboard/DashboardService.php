@@ -13,7 +13,10 @@ final class DashboardService
     ) {
     }
 
-    /** @return array{totalVolume: float, transactionCount: int, investorCount: int, fundCount: int} */
+    /**
+     * Vrací globální statistiku — celkový objem, počty transakcí, investorů a fondů.
+     * @return array{totalVolume: float, transactionCount: int, investorCount: int, fundCount: int}
+     */
     public function getGlobalStats(): array
     {
         return [
@@ -25,6 +28,8 @@ final class DashboardService
     }
 
     /**
+     * Vrací per-fond statistiku seřazenou sestupně podle celkového objemu.
+     * Fondy bez transakcí jsou zahrnuty s nulovými hodnotami.
      * @return array<int, array{id: int, name: string, investorCount: int, totalAmount: float, avgAmount: float, lastTransaction: ?\DateTimeImmutable}>
      */
     public function getFundStats(): array
@@ -41,14 +46,13 @@ final class DashboardService
 
         $statsByFund = [];
         foreach ($statsRows as $row) {
-            $lastTx = $row->last_transaction;
             $statsByFund[$row->fund_id] = [
                 'investorCount'   => (int) $row->investor_count,
                 'totalAmount'     => (float) $row->total_amount,
                 'avgAmount'       => (float) $row->avg_amount,
-                'lastTransaction' => $lastTx instanceof \DateTimeInterface
-                    ? \DateTimeImmutable::createFromInterface($lastTx)
-                    : ($lastTx !== null ? new \DateTimeImmutable($lastTx) : null),
+                'lastTransaction' => $row->last_transaction !== null
+                    ? new \DateTimeImmutable((string) $row->last_transaction)
+                    : null,
             ];
         }
 
