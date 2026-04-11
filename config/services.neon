@@ -12,5 +12,6 @@ services:
     - App\Application\Fund\FundService
     - App\Application\Investor\InvestorService
     - App\Application\Transaction\TransactionService
+    - App\Application\Dashboard\DashboardService
     - App\Application\User\UserService
     - App\Application\User\Authenticator
