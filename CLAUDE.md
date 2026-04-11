@@ -86,6 +86,8 @@ DB credentials: `config/local.neon` (gitignored).
 - Dockerfile potřebuje `unzip` a `git` pro Composer (již přidáno) — bez nich `composer install` selže
 - Tabulka `users` se při prvním startu vytvoří automaticky z `db/schema.sql`; při existujícím volume spustit: `docker compose exec -T db mariadb -u USER -pPASS DBNAME < db/schema.sql`
 - První admin se vytvoří CLI seederem: `docker compose exec app php bin/create-admin.php email heslo`
+- **PHP skripty v Dockeru:** pro víceřádkový PHP kód použít heredoc `docker compose exec app php << 'EOF' ... EOF`; `php -r "..."` s `{$obj->prop}` interpolací v bashi nefunguje správně
+- **Testování přihlášení:** stará session v prohlížeči může způsobit false "nesprávné heslo" i se správnými credentials — testovat v inkognitu nebo vymazat cookies pro `localhost`
 
 ## Klíčové soubory
 
@@ -102,6 +104,7 @@ DB credentials: `config/local.neon` (gitignored).
 | `app/Application/User/UserService.php` | Vytváření admin/investor účtů, update, delete |
 | `app/Application/User/Authenticator.php` | Nette Security authenticator (email + heslo) |
 | `app/Infrastructure/Database/UserRepository.php` | DB implementace UserRepositoryInterface |
+| `app/Application/Dashboard/DashboardService.php` | Globální stats + per-fond agregace pro admin dashboard |
 | `bin/create-admin.php` | CLI seeder pro prvního admina |
 
 ## Nette konvence (důležité)

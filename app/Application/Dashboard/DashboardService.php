@@ -51,7 +51,7 @@ final class DashboardService
                 'totalAmount'     => (float) $row->total_amount,
                 'avgAmount'       => (float) $row->avg_amount,
                 'lastTransaction' => $row->last_transaction !== null
-                    ? new \DateTimeImmutable((string) $row->last_transaction)
+                    ? \DateTimeImmutable::createFromInterface($row->last_transaction)
                     : null,
             ];
         }
