@@ -90,13 +90,13 @@ final class InvestorPresenter extends BaseAdminPresenter
     {
         $form = new Form;
         $form->addHidden('id');
-        $form->addPassword('password', 'Nové heslo:')
+        $form->addPassword('new_password', 'Nové heslo:')
             ->setRequired('Zadejte heslo.')
             ->addRule(Form::MinLength, 'Minimálně 7 znaků.', 7)
             ->addRule(Form::Pattern, 'Musí obsahovat alespoň 1 velké písmeno.', '.*[A-Z].*');
-        $form->addPassword('password_confirm', 'Potvrzení hesla:')
+        $form->addPassword('new_password_confirm', 'Potvrzení hesla:')
             ->setRequired('Potvrďte heslo.')
-            ->addRule(Form::Equal, 'Hesla se neshodují.', $form['password']);
+            ->addRule(Form::Equal, 'Hesla se neshodují.', $form['new_password']);
         $form->addProtection();
         $form->addSubmit('save', 'Uložit')
             ->setHtmlAttribute('class', 'btn btn-primary');
@@ -115,7 +115,7 @@ final class InvestorPresenter extends BaseAdminPresenter
     private function changePasswordFormSucceeded(Form $form, \stdClass $values): void
     {
         $investorId = (int) $values->id;
-        $changed = $this->userService->changeInvestorPassword($investorId, $values->password);
+        $changed = $this->userService->changeInvestorPassword($investorId, $values->new_password);
 
         if (!$changed) {
             $form->addError('Tento investor nemá přiřazený uživatelský účet.');

@@ -138,8 +138,8 @@ function openPasswordModal(btn) {
     const modal = document.getElementById('passwordModal');
     modal.querySelector('[name="id"]').value = btn.dataset.id;
     document.getElementById('passwordModalLabel').textContent = 'Změna hesla: ' + btn.dataset.name;
-    modal.querySelector('[name="password"]').value = '';
-    modal.querySelector('[name="password_confirm"]').value = '';
+    modal.querySelector('[name="new_password"]').value = '';
+    modal.querySelector('[name="new_password_confirm"]').value = '';
     bootstrap.Modal.getOrCreateInstance(modal).show();
 }
 </script>
