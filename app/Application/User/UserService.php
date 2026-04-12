@@ -86,4 +86,14 @@ final class UserService
         $this->userRepository->deleteByInvestorId($investorId);
         $this->investorRepository->delete($investorId);
     }
+
+    public function changeInvestorPassword(int $investorId, string $newPassword): bool
+    {
+        $user = $this->userRepository->findByInvestorId($investorId);
+        if ($user === null) {
+            return false;
+        }
+        $this->userRepository->updatePassword($user->id, $this->passwords->hash($newPassword));
+        return true;
+    }
 }
