@@ -15,4 +15,6 @@ interface UserRepositoryInterface
     public function save(User $user): int;
 
     public function deleteByInvestorId(int $investorId): void;
+
+    public function updatePassword(int $userId, string $hash): void;
 }

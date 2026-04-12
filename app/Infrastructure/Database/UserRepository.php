@@ -73,6 +73,13 @@ final class UserRepository implements UserRepositoryInterface
         $this->database->table('users')->where('investor_id', $investorId)->delete();
     }
 
+    public function updatePassword(int $userId, string $hash): void
+    {
+        $this->database->table('users')
+            ->where('id', $userId)
+            ->update(['password_hash' => $hash]);
+    }
+
     private function rowToUser(\Nette\Database\Table\ActiveRow $row): User
     {
         return new User(
