@@ -1,0 +1,7 @@
+RewriteEngine On
+
+# Přesměrování kořene na www/
+RewriteRule ^$ www/ [L]
+
+# Přesměrování všeho ostatního na www/ (pokud tam ještě nesměřuje)
+RewriteRule ^(?!www/)(.*)$ www/$1 [L]
