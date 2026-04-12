@@ -37,7 +37,7 @@ final class TransactionRepository implements TransactionRepositoryInterface
             fundId: $row->fund_id,
             investorId: $row->investor_id,
             amount: (float) $row->amount,
-            createdAt: new \DateTimeImmutable($row->created_at),
+            createdAt: \DateTimeImmutable::createFromInterface($row->created_at),
         );
     }
 
@@ -78,7 +78,7 @@ final class TransactionRepository implements TransactionRepositoryInterface
             fundId:     $row->fund_id,
             investorId: $row->investor_id,
             amount:     (float) $row->amount,
-            createdAt:  new \DateTimeImmutable($row->created_at),
+            createdAt:  \DateTimeImmutable::createFromInterface($row->created_at),
         ), $rows);
     }
 }
