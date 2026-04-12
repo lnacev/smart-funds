@@ -35,6 +35,12 @@
                         onclick="openInvestorModal(this)">
                     Upravit
                 </button>
+                <button type="button" class="btn btn-sm btn-outline-secondary"
+                        data-id="{$investor->id}"
+                        data-name="{$investor->name}"
+                        onclick="openPasswordModal(this)">
+                    Heslo
+                </button>
                 <button type="button" class="btn btn-sm btn-outline-danger"
                         data-id="{$investor->id}"
                         data-name="{$investor->name}"
@@ -84,6 +90,22 @@
     </div>
 </div>
 
+{snippet passwordModal}
+<div class="modal fade" id="passwordModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="passwordModalLabel">Změna hesla</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                {control changePasswordForm}
+            </div>
+        </div>
+    </div>
+</div>
+{/snippet}
+
 {/block}
 
 {block scripts}
@@ -110,6 +132,15 @@ function openDeleteModal(btn) {
     document.getElementById('deleteInvestorName').textContent = btn.dataset.name;
     document.querySelector('#deleteModal [name="id"]').value = btn.dataset.id;
     bootstrap.Modal.getOrCreateInstance(document.getElementById('deleteModal')).show();
+}
+
+function openPasswordModal(btn) {
+    const modal = document.getElementById('passwordModal');
+    modal.querySelector('[name="id"]').value = btn.dataset.id;
+    document.getElementById('passwordModalLabel').textContent = 'Změna hesla: ' + btn.dataset.name;
+    modal.querySelector('[name="password"]').value = '';
+    modal.querySelector('[name="password_confirm"]').value = '';
+    bootstrap.Modal.getOrCreateInstance(modal).show();
 }
 </script>
 {/block}
