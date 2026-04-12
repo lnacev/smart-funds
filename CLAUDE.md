@@ -149,6 +149,16 @@ DB credentials: `config/local.neon` (gitignored).
 - Docker auto-import: `./db` je namountován jako `/docker-entrypoint-initdb.d` — spustí se při **prvním** startu (prázdný volume)
 - Ruční import do existujícího volume: `docker compose exec -T db mariadb -u USER -pPASS DBNAME < db/schema.sql`
 
+## CI/CD — Deploy na Wedos
+
+- **Workflow:** `.github/workflows/deploy.yml` — spustí se při push do `main`
+- **Akce:** `SamKirkland/FTP-Deploy-Action@v4.3.4`, protokol `ftps`
+- **Secrets v GitHub repo:** `FTP_SERVER`, `FTP_USERNAME`, `FTP_PASSWORD`, `FTP_SERVER_DIR`
+- **`FTP_SERVER_DIR`** musí ukazovat na kořen projektu (kde je `app/`, `www/`), ne dovnitř `www/`
+- **`config/local.neon`** na serveru musí existovat ručně — není v repo (gitignored), workflow ho nikdy nepřepíše
+- **Před deployem:** workflow spustí `composer install --no-dev --optimize-autoloader`
+- **Stav deploye:** akce si drží `.ftp-deploy-sync-state.json` na FTP serveru — nahrává jen změněné soubory
+
 ## Co zatím není implementováno
 
 - Změna hesla pro investora přes admin panel
