@@ -127,6 +127,7 @@ final class InvestorPresenter extends BaseAdminPresenter
 
         if ($this->isAjax()) {
             $this->payload->closeModal = true;
+            $this->redrawControl('passwordModal');
         } else {
             $this->redirect('default');
         }
