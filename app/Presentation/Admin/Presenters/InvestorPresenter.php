@@ -85,4 +85,50 @@ final class InvestorPresenter extends BaseAdminPresenter
 
         return $form;
     }
+
+    protected function createComponentChangePasswordForm(): Form
+    {
+        $form = new Form;
+        $form->addHidden('id');
+        $form->addPassword('password', 'Nové heslo:')
+            ->setRequired('Zadejte heslo.')
+            ->addRule(Form::MinLength, 'Minimálně 7 znaků.', 7)
+            ->addRule(Form::Pattern, 'Musí obsahovat alespoň 1 velké písmeno.', '.*[A-Z].*');
+        $form->addPassword('password_confirm', 'Potvrzení hesla:')
+            ->setRequired('Potvrďte heslo.')
+            ->addRule(Form::Equal, 'Hesla se neshodují.', $form['password']);
+        $form->addProtection();
+        $form->addSubmit('save', 'Uložit')
+            ->setHtmlAttribute('class', 'btn btn-primary');
+        $form->getElementPrototype()->addClass('ajax');
+
+        $form->onSuccess[] = $this->changePasswordFormSucceeded(...);
+        $form->onError[] = function (): void {
+            if ($this->isAjax()) {
+                $this->redrawControl('passwordModal');
+            }
+        };
+
+        return $form;
+    }
+
+    private function changePasswordFormSucceeded(Form $form, \stdClass $values): void
+    {
+        $investorId = (int) $values->id;
+        $changed = $this->userService->changeInvestorPassword($investorId, $values->password);
+
+        if (!$changed) {
+            $form->addError('Tento investor nemá přiřazený uživatelský účet.');
+            if ($this->isAjax()) {
+                $this->redrawControl('passwordModal');
+            }
+            return;
+        }
+
+        if ($this->isAjax()) {
+            $this->payload->closeModal = true;
+        } else {
+            $this->redirect('default');
+        }
+    }
 }
