@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Infrastructure\Database;
 
 use App\Domain\Price\ExchangeRateRepositoryInterface;
+use DateTimeImmutable;
 use Nette\Database\Explorer;
 
 final class ExchangeRateRepository implements ExchangeRateRepositoryInterface
@@ -28,7 +29,7 @@ final class ExchangeRateRepository implements ExchangeRateRepositoryInterface
         return $row !== null ? (float) $row->rate : null;
     }
 
-    public function upsert(string $from, string $to, float $rate, \DateTimeImmutable $fetchedAt): void
+    public function upsert(string $from, string $to, float $rate, DateTimeImmutable $fetchedAt): void
     {
         $this->database->query(
             'INSERT INTO exchange_rates (from_currency, to_currency, rate, fetched_at)

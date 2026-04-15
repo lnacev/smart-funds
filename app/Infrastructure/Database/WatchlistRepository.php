@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Infrastructure\Database;
 
 use App\Domain\Watchlist\WatchlistRepositoryInterface;
+use DateTimeImmutable;
 use Nette\Database\Explorer;
 
 final class WatchlistRepository implements WatchlistRepositoryInterface
@@ -30,7 +31,7 @@ final class WatchlistRepository implements WatchlistRepositoryInterface
         $this->database->table('watchlist')->insert([
             'investor_id' => $investorId,
             'security_id' => $securityId,
-            'added_at'    => (new \DateTimeImmutable())->format('Y-m-d H:i:s'),
+            'added_at'    => (new DateTimeImmutable())->format('Y-m-d H:i:s'),
         ]);
     }
 

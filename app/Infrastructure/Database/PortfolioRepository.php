@@ -6,6 +6,7 @@ namespace App\Infrastructure\Database;
 
 use App\Domain\Portfolio\PortfolioPosition;
 use App\Domain\Portfolio\PortfolioRepositoryInterface;
+use DateTimeImmutable;
 use Nette\Database\Explorer;
 use Nette\Database\Table\ActiveRow;
 
@@ -23,7 +24,7 @@ final class PortfolioRepository implements PortfolioRepositoryInterface
             ->order('created_at DESC')
             ->fetchAll();
 
-        return array_map(fn($row) => $this->rowToPosition($row), $rows);
+        return \array_map(fn($row) => $this->rowToPosition($row), $rows);
     }
 
     public function findById(int $id): ?PortfolioPosition
@@ -73,9 +74,9 @@ final class PortfolioRepository implements PortfolioRepositoryInterface
             quantity:         (float) $row->quantity,
             purchasePrice:    (float) $row->purchase_price,
             purchaseCurrency: $row->purchase_currency,
-            purchasedAt:      new \DateTimeImmutable($row->purchased_at),
+            purchasedAt:      new DateTimeImmutable($row->purchased_at),
             note:             $row->note,
-            createdAt:        \DateTimeImmutable::createFromInterface($row->created_at),
+            createdAt:        DateTimeImmutable::createFromInterface($row->created_at),
         );
     }
 }

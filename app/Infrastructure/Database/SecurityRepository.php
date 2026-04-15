@@ -6,6 +6,7 @@ namespace App\Infrastructure\Database;
 
 use App\Domain\Security\Security;
 use App\Domain\Security\SecurityRepositoryInterface;
+use DateTimeImmutable;
 use Nette\Database\Explorer;
 use Nette\Database\Table\ActiveRow;
 
@@ -28,7 +29,7 @@ final class SecurityRepository implements SecurityRepositoryInterface
             ->order('ticker ASC')
             ->fetchAll();
 
-        return array_map(fn($row) => $this->rowToSecurity($row), $rows);
+        return \array_map(fn($row) => $this->rowToSecurity($row), $rows);
     }
 
     public function findById(int $id): ?Security
@@ -91,7 +92,7 @@ final class SecurityRepository implements SecurityRepositoryInterface
             provider:       $row->provider,
             providerSymbol: $row->provider_symbol,
             active:         (bool) $row->active,
-            createdAt:      \DateTimeImmutable::createFromInterface($row->created_at),
+            createdAt:      DateTimeImmutable::createFromInterface($row->created_at),
         );
     }
 }

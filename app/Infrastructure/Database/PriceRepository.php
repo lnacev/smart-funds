@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Infrastructure\Database;
 
 use App\Domain\Price\PriceRepositoryInterface;
+use DateTimeImmutable;
 use Nette\Database\Explorer;
 
 final class PriceRepository implements PriceRepositoryInterface
@@ -27,11 +28,11 @@ final class PriceRepository implements PriceRepositoryInterface
         return [
             'price'      => (float) $row->price,
             'currency'   => $row->currency,
-            'fetched_at' => \DateTimeImmutable::createFromInterface($row->fetched_at),
+            'fetched_at' => DateTimeImmutable::createFromInterface($row->fetched_at),
         ];
     }
 
-    public function upsert(int $securityId, float $price, string $currency, \DateTimeImmutable $fetchedAt): void
+    public function upsert(int $securityId, float $price, string $currency, DateTimeImmutable $fetchedAt): void
     {
         $this->database->query(
             'INSERT INTO security_prices (security_id, price, currency, fetched_at)
