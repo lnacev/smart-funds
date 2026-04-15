@@ -163,7 +163,7 @@ Funkce přidána v dubnu 2026. Investoři sledují akcie/ETF/krypto, ceny se cac
 
 **Nové DB tabulky:** `securities`, `portfolio_positions`, `watchlist`, `security_prices`, `exchange_rates`
 
-**Admin:** `/admin/security` — CRUD katalogu cenných papírů, tlačítko "Aktualizovat ceny" (signál `fetchNow!`)
+**Admin:** `/admin/security` — CRUD katalogu cenných papírů, tlačítko "Aktualizovat ceny" (signál `fetchNow!`); pole Ticker má autocomplete přes Alpha Vantage `SYMBOL_SEARCH` (signál `searchTicker!`, debounce 400 ms, min. 2 znaky) — při výběru se auto-vyplní Název, Typ, Burza, Měna, Provider, Symbol pro API
 
 **Investor dashboard** (`/investor`) — 3 taby Bootstrap:
 - **Transakce do fondů** — stávající data
@@ -204,6 +204,11 @@ parameters:
 
 - **Cron na Wedos:** nastavit cron job pro `php bin/fetch-prices.php` (1× denně) — bez toho se ceny neaktualizují automaticky
 - **EUR→CZK kurz:** AlphaVantageProvider fetchuje zatím jen USD→CZK; pozice v EUR zobrazují `—` v hodnotě CZK
-- **Alpha Vantage klíč na serveru:** přidat `parameters.alphavantage.apiKey` do `config/local.neon` na Wedos (gitignored, deploy nepřepíše)
 - **CSRF ochrana na front-end** (delete signály jsou chráněné přes Nette Form `addProtection()`; admin modul vyžaduje přihlášení)
 - Investor dashboard — zobrazení jmen fondů čerpá z FundService (ActiveRows, ne entity) — intentionally
+
+## Wedos produkce — jednorázové kroky (dokončit ručně)
+
+- **Nové DB tabulky:** spustit SQL z `db/schema.sql` (sekce securities, security_prices, portfolio_positions, watchlist, exchange_rates) přes phpMyAdmin/Adminer — tabulky funds/investors/transactions/users existují, přidat jen nové
+- **Admin účet:** nahrát `www/install-admin.php` přes FTP, navštívit `https://[doména]/install-admin.php?token=SmF2025init`, pak soubor smazat (soubor je gitignored, deploy ho nenahraje)
+- **Alpha Vantage klíč:** zkontrolovat `config/local.neon` na Wedosu — musí obsahovat `parameters.alphavantage.apiKey`
