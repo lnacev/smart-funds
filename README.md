@@ -1,36 +1,39 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Smart Funds
 
-## Getting Started
+Portfoliová webová aplikace pro správu investičních fondů. Umožňuje spravovat fondy, investory, transakce a sledovat portfolio cenných papírů (akcie, ETF, krypto).
 
-First, run the development server:
+**Technologie:** PHP 8.5, Nette Framework 3.x, Latte 3.x, MariaDB 11
+
+---
+
+## Instalace a spuštění
+
+### Docker (doporučeno)
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+docker compose up -d
+docker compose exec app composer install
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Při prvním spuštění s prázdným DB volume se schéma importuje automaticky. Poté vytvořte prvního admina:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+docker compose exec app php bin/create-admin.php email heslo
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- Aplikace: http://localhost:8080
+- Adminer: http://localhost:8081
 
-## Learn More
+Credentials pro DB se konfigurují v `.env.docker` (zkopírovat z `.env.docker.example`).
 
-To learn more about Next.js, take a look at the following resources:
+### Bez Dockeru
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```bash
+composer install
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Zkopírujte `config/local.neon.example` → `config/local.neon` a doplňte credentials k databázi.
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```bash
+php -S localhost:8000 -t www
+```
