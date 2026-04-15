@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Domain\Portfolio;
 
+use DateTimeImmutable;
+
 final readonly class PortfolioPosition
 {
     public function __construct(
@@ -13,9 +15,9 @@ final readonly class PortfolioPosition
         public float $quantity,
         public float $purchasePrice,
         public string $purchaseCurrency,
-        public \DateTimeImmutable $purchasedAt,
+        public DateTimeImmutable $purchasedAt,
         public ?string $note,
-        public \DateTimeImmutable $createdAt,
+        public DateTimeImmutable $createdAt,
     ) {
     }
 }

@@ -4,12 +4,14 @@ declare(strict_types=1);
 
 namespace App\Domain\Price;
 
+use DateTimeImmutable;
+
 interface PriceRepositoryInterface
 {
     /**
-     * @return array{price: float, currency: string, fetched_at: \DateTimeImmutable}|null
+     * @return array{price: float, currency: string, fetched_at: DateTimeImmutable}|null
      */
     public function findBySecurity(int $securityId): ?array;
 
-    public function upsert(int $securityId, float $price, string $currency, \DateTimeImmutable $fetchedAt): void;
+    public function upsert(int $securityId, float $price, string $currency, DateTimeImmutable $fetchedAt): void;
 }

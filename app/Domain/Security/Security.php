@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Domain\Security;
 
+use DateTimeImmutable;
+
 final readonly class Security
 {
     public function __construct(
@@ -16,7 +18,7 @@ final readonly class Security
         public string $provider,
         public string $providerSymbol,
         public bool $active,
-        public \DateTimeImmutable $createdAt,
+        public DateTimeImmutable $createdAt,
     ) {
     }
 }
