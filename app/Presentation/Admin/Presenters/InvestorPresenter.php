@@ -19,6 +19,9 @@ final class InvestorPresenter extends BaseAdminPresenter
     public function actionDefault(): void
     {
         $this->template->investors = $this->investorService->getAll();
+        $this->template->investorIdsWithAccount = array_flip(
+            $this->userService->getInvestorIdsWithAccounts()
+        );
     }
 
     protected function createComponentInvestorForm(): Form
@@ -128,6 +131,57 @@ final class InvestorPresenter extends BaseAdminPresenter
         if ($this->isAjax()) {
             $this->payload->closeModal = true;
             $this->redrawControl('passwordModal');
+        } else {
+            $this->redirect('default');
+        }
+    }
+
+    protected function createComponentAssignUserForm(): Form
+    {
+        $form = new Form;
+        $form->addHidden('id');
+        $form->addPassword('password', 'Heslo:')
+            ->setRequired('Zadejte heslo.')
+            ->addRule(Form::MinLength, 'Minimálně 7 znaků.', 7)
+            ->addRule(Form::Pattern, 'Musí obsahovat alespoň 1 velké písmeno.', '.*[A-Z].*');
+        $form->addPassword('password_confirm', 'Potvrzení hesla:')
+            ->setRequired('Potvrďte heslo.')
+            ->addRule(Form::Equal, 'Hesla se neshodují.', $form['password']);
+        $form->addProtection();
+        $form->addSubmit('save', 'Vytvořit účet')
+            ->setHtmlAttribute('class', 'btn btn-primary');
+        $form->getElementPrototype()->addClass('ajax');
+
+        $form->onSuccess[] = $this->assignUserFormSucceeded(...);
+        $form->onError[] = function (): void {
+            if ($this->isAjax()) {
+                $this->redrawControl('assignUserModal');
+            }
+        };
+
+        return $form;
+    }
+
+    private function assignUserFormSucceeded(Form $form, \stdClass $values): void
+    {
+        try {
+            $this->userService->assignUserToInvestor((int) $values->id, $values->password);
+        } catch (\InvalidArgumentException $e) {
+            $form->addError($e->getMessage());
+            if ($this->isAjax()) {
+                $this->redrawControl('assignUserModal');
+            }
+            return;
+        }
+
+        if ($this->isAjax()) {
+            $this->template->investors = $this->investorService->getAll();
+            $this->template->investorIdsWithAccount = array_flip(
+                $this->userService->getInvestorIdsWithAccounts()
+            );
+            $this->redrawControl('list');
+            $this->redrawControl('assignUserModal');
+            $this->payload->closeModal = true;
         } else {
             $this->redirect('default');
         }
