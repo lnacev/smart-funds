@@ -1,0 +1,6 @@
+/vendor/
+/config/local.neon
+/.env.docker
+/www/install-admin.php
+/temp/cache/
+/log/
