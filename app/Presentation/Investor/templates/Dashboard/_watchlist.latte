@@ -1,0 +1,72 @@
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h4>Watchlist</h4>
+    <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#addWatchlistModal">
+        + Přidat
+    </button>
+</div>
+
+{snippet watchlistContent}
+<table class="table table-striped table-hover table-bordered align-middle">
+    <thead class="table-dark">
+        <tr>
+            <th>Ticker</th>
+            <th>Název</th>
+            <th>Typ</th>
+            <th class="text-end">Akt. cena</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        {foreach $watchlist as $w}
+        {var $sec = $w['security']}
+        <tr>
+            <td><strong>{$sec->ticker}</strong></td>
+            <td>{$sec->name}</td>
+            <td><span class="badge bg-secondary">{$sec->type}</span></td>
+            <td class="text-end">
+                {if $w['currentPrice'] !== null}
+                    {number_format($w['currentPrice'], 2, ',', ' ')} {$w['priceCurrency']}
+                {else}
+                    <span class="text-muted">Nedostupná</span>
+                {/if}
+            </td>
+            <td>
+                <a n:href="removeWatchlist!, securityId: $sec->id"
+                   class="btn btn-sm btn-outline-danger">
+                    Odebrat
+                </a>
+            </td>
+        </tr>
+        {else}
+        <tr><td colspan="5" class="text-center text-muted">Watchlist je prázdný. Přidejte cenné papíry ke sledování.</td></tr>
+        {/foreach}
+    </tbody>
+</table>
+{/snippet}
+
+{* --- Přidat do watchlistu modal --- *}
+{snippet addWatchlistModal}
+<div class="modal fade" id="addWatchlistModal" tabindex="-1">
+    <div class="modal-dialog modal-sm">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Přidat do watchlistu</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                {control addWatchlistForm}
+            </div>
+        </div>
+    </div>
+</div>
+{/snippet}
+
+<script>
+document.addEventListener('naja:success', e => {
+    if (e.detail?.payload?.closeModal) {
+        document.querySelectorAll('.modal.show').forEach(m =>
+            bootstrap.Modal.getOrCreateInstance(m).hide()
+        );
+    }
+});
+</script>

@@ -1,0 +1,111 @@
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h4>
+        Portfolio
+        {if $totalPortfolioCzk > 0}
+            <span class="text-muted fs-6">— aktuální hodnota: <strong>{number_format($totalPortfolioCzk, 0, ',', ' ')} Kč</strong></span>
+        {/if}
+    </h4>
+    <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#addPositionModal">
+        + Přidat nákup
+    </button>
+</div>
+
+{snippet portfolioContent}
+{var $anyStale = false}
+{foreach $positions as $p}
+    {if $p['currentPrice'] === null}{var $anyStale = true}{/if}
+{/foreach}
+
+{if $anyStale}
+    <div class="alert alert-warning py-2">
+        <small>U některých cenných papírů není cena dostupná. Spusťte "Aktualizovat ceny".</small>
+    </div>
+{/if}
+
+<table class="table table-striped table-hover table-bordered align-middle">
+    <thead class="table-dark">
+        <tr>
+            <th>Ticker</th>
+            <th>Název</th>
+            <th class="text-end">Počet ks</th>
+            <th class="text-end">Nák. cena</th>
+            <th class="text-end">Akt. cena</th>
+            <th class="text-end">Hodnota (CZK)</th>
+            <th class="text-end">Změna</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        {foreach $positions as $p}
+        {var $pos = $p['position']}
+        {var $sec = $p['security']}
+        <tr>
+            <td><strong>{$sec->ticker}</strong></td>
+            <td>{$sec->name}</td>
+            <td class="text-end">{number_format($pos->quantity, 6, ',', ' ')}</td>
+            <td class="text-end">{number_format($pos->purchasePrice, 2, ',', ' ')} {$pos->purchaseCurrency}</td>
+            <td class="text-end">
+                {if $p['currentPrice'] !== null}
+                    {number_format($p['currentPrice'], 2, ',', ' ')} {$sec->currency}
+                {else}
+                    <span class="text-muted">—</span>
+                {/if}
+            </td>
+            <td class="text-end">
+                {if $p['valueCzk'] !== null}
+                    {number_format($p['valueCzk'], 0, ',', ' ')} Kč
+                {else}
+                    <span class="text-muted">—</span>
+                {/if}
+            </td>
+            <td class="text-end">
+                {if $p['pnlPercent'] !== null}
+                    {var $cls = $p['pnlPercent'] >= 0 ? 'text-success' : 'text-danger'}
+                    <span class="{$cls}">
+                        {if $p['pnlPercent'] >= 0}+{/if}{number_format($p['pnlPercent'], 2, ',', ' ')} %
+                    </span>
+                {else}
+                    <span class="text-muted">—</span>
+                {/if}
+            </td>
+            <td>
+                <a n:href="deletePosition!, id: $pos->id"
+                   class="btn btn-sm btn-outline-danger"
+                   onclick="return confirm('Smazat tuto pozici?')">
+                    Smazat
+                </a>
+            </td>
+        </tr>
+        {else}
+        <tr><td colspan="8" class="text-center text-muted">Žádné pozice. Přidejte první nákup.</td></tr>
+        {/foreach}
+    </tbody>
+</table>
+{/snippet}
+
+{* --- Přidat nákup modal --- *}
+{snippet addPositionModal}
+<div class="modal fade" id="addPositionModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Přidat nákup</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                {control addPositionForm}
+            </div>
+        </div>
+    </div>
+</div>
+{/snippet}
+
+<script>
+document.addEventListener('naja:success', e => {
+    if (e.detail?.payload?.closeModal) {
+        document.querySelectorAll('.modal.show').forEach(m =>
+            bootstrap.Modal.getOrCreateInstance(m).hide()
+        );
+    }
+});
+</script>

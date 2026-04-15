@@ -2,58 +2,87 @@
 {block title}Moje portfolio — Smart Funds{/block}
 {block content}
 
-<h2 class="mb-4">Moje portfolio</h2>
-
-<div class="row g-3 mb-4">
-    <div class="col-sm-4">
-        <div class="card text-center border-primary">
-            <div class="card-body">
-                <h6 class="card-subtitle mb-1 text-muted">Celkem investováno</h6>
-                <p class="card-text fs-4 fw-bold text-primary">{number_format($totalInvested, 2, ',', ' ')} Kč</p>
-            </div>
-        </div>
-    </div>
-    <div class="col-sm-4">
-        <div class="card text-center">
-            <div class="card-body">
-                <h6 class="card-subtitle mb-1 text-muted">Počet transakcí</h6>
-                <p class="card-text fs-4 fw-bold">{$transactionCount}</p>
-            </div>
-        </div>
-    </div>
-    <div class="col-sm-4">
-        <div class="card text-center">
-            <div class="card-body">
-                <h6 class="card-subtitle mb-1 text-muted">Počet fondů</h6>
-                <p class="card-text fs-4 fw-bold">{$fundCount}</p>
-            </div>
-        </div>
-    </div>
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Moje portfolio</h2>
+    {if $canRefresh}
+        <a n:href="refreshPrices!" class="btn btn-outline-secondary btn-sm">
+            Aktualizovat ceny
+        </a>
+    {else}
+        <button class="btn btn-outline-secondary btn-sm" disabled title="Dostupné za hodinu">
+            Aktualizovat ceny
+        </button>
+    {/if}
 </div>
 
-<h4 class="mb-3">Moje transakce</h4>
+<ul class="nav nav-tabs mb-4" id="dashboardTabs">
+    <li class="nav-item">
+        <a class="nav-link active" data-bs-toggle="tab" href="#tab-transactions">Transakce do fondů</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" data-bs-toggle="tab" href="#tab-portfolio">Portfolio akcií</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" data-bs-toggle="tab" href="#tab-watchlist">Watchlist</a>
+    </li>
+</ul>
 
-<table class="table table-striped table-bordered">
-    <thead class="table-dark">
-        <tr>
-            <th>#</th>
-            <th>Fond</th>
-            <th>Částka</th>
-            <th>Datum</th>
-        </tr>
-    </thead>
-    <tbody>
-        {foreach $transactions as $t}
-        <tr>
-            <td>{$t->id}</td>
-            <td>{isset($fundNames[$t->fundId]) ? $fundNames[$t->fundId] : $t->fundId}</td>
-            <td>{number_format($t->amount, 2, ',', ' ')} Kč</td>
-            <td>{$t->createdAt->format('j. n. Y')}</td>
-        </tr>
-        {else}
-        <tr><td colspan="4" class="text-center text-muted">Zatím žádné transakce</td></tr>
-        {/foreach}
-    </tbody>
-</table>
+<div class="tab-content">
+    <div class="tab-pane fade show active" id="tab-transactions">
+        {* --- Stávající transakce sekce --- *}
+        <div class="row g-3 mb-4">
+            <div class="col-sm-4">
+                <div class="card text-center border-primary">
+                    <div class="card-body">
+                        <h6 class="card-subtitle mb-1 text-muted">Celkem investováno do fondů</h6>
+                        <p class="card-text fs-4 fw-bold text-primary">{number_format($totalInvested, 2, ',', ' ')} Kč</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-4">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <h6 class="card-subtitle mb-1 text-muted">Počet transakcí</h6>
+                        <p class="card-text fs-4 fw-bold">{$transactionCount}</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-4">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <h6 class="card-subtitle mb-1 text-muted">Počet fondů</h6>
+                        <p class="card-text fs-4 fw-bold">{$fundCount}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <table class="table table-striped table-bordered">
+            <thead class="table-dark">
+                <tr><th>#</th><th>Fond</th><th>Částka</th><th>Datum</th></tr>
+            </thead>
+            <tbody>
+                {foreach $transactions as $t}
+                <tr>
+                    <td>{$t->id}</td>
+                    <td>{isset($fundNames[$t->fundId]) ? $fundNames[$t->fundId] : $t->fundId}</td>
+                    <td>{number_format($t->amount, 2, ',', ' ')} Kč</td>
+                    <td>{$t->createdAt->format('j. n. Y')}</td>
+                </tr>
+                {else}
+                <tr><td colspan="4" class="text-center text-muted">Zatím žádné transakce</td></tr>
+                {/foreach}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="tab-pane fade" id="tab-portfolio">
+        {include '_portfolio.latte'}
+    </div>
+
+    <div class="tab-pane fade" id="tab-watchlist">
+        {include '_watchlist.latte'}
+    </div>
+</div>
 
 {/block}
