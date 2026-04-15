@@ -1,3 +1,7 @@
+parameters:
+    alphavantage:
+        apiKey: 'TVUJ_ALPHA_VANTAGE_API_KLIC'
+
 database:
     dsn: 'mysql:host=db;dbname=smartfunds'
     user: smartfunds

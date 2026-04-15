@@ -1,3 +1,7 @@
+parameters:
+    alphavantage:
+        apiKey: ''
+
 includes:
     - services.neon
 

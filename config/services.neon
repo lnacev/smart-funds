@@ -15,3 +15,22 @@ services:
     - App\Application\Dashboard\DashboardService
     - App\Application\User\UserService
     - App\Application\User\Authenticator
+
+    # Securities
+    - App\Infrastructure\Database\SecurityRepository
+    - App\Infrastructure\Database\PortfolioRepository
+    - App\Infrastructure\Database\WatchlistRepository
+    - App\Infrastructure\Database\PriceRepository
+    - App\Infrastructure\Database\ExchangeRateRepository
+
+    # Price Providers
+    - App\Infrastructure\Providers\CoinGeckoProvider
+    - App\Infrastructure\Providers\YahooFinanceProvider
+    - App\Infrastructure\Providers\AlphaVantageProvider(%alphavantage.apiKey%)
+
+    # Application Services — Securities & Portfolio
+    - App\Application\Security\SecurityService
+    - App\Application\Portfolio\PortfolioService
+    - App\Application\Watchlist\WatchlistService
+    - App\Application\Prices\PriceService
+    - App\Application\Prices\PriceFetcherService
