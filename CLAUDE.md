@@ -44,6 +44,7 @@ Presentery volají pouze Application services, ne přímo repositáře.
 | `/admin/fund` | Admin | Fund |
 | `/admin/investor` | Admin | Investor |
 | `/admin/transaction` | Admin | Transaction |
+| `/admin/security` | Admin | Security |
 | `/investor` | Investor | Dashboard |
 | `/sign/in` | Front | Sign (login) |
 | `/sign/out` | Front | Sign (logout) |
@@ -105,7 +106,16 @@ DB credentials: `config/local.neon` (gitignored).
 | `app/Application/User/Authenticator.php` | Nette Security authenticator (email + heslo) |
 | `app/Infrastructure/Database/UserRepository.php` | DB implementace UserRepositoryInterface |
 | `app/Application/Dashboard/DashboardService.php` | Globální stats + per-fond agregace pro admin dashboard |
+| `app/Application/Security/SecurityService.php` | CRUD katalogu cenných papírů |
+| `app/Application/Portfolio/PortfolioService.php` | Správa portfoliových pozic investora + výpočet hodnoty |
+| `app/Application/Watchlist/WatchlistService.php` | Watchlist investora |
+| `app/Application/Prices/PriceService.php` | Čtení cen + kurzů z DB cache |
+| `app/Application/Prices/PriceFetcherService.php` | Orchestrace fetchování cen (Alpha Vantage, CoinGecko, Yahoo) |
+| `app/Infrastructure/Providers/AlphaVantageProvider.php` | Ceny US akcií/ETF + USD→CZK kurz |
+| `app/Infrastructure/Providers/CoinGeckoProvider.php` | Ceny krypta (vyžaduje User-Agent hlavičku) |
+| `app/Infrastructure/Providers/YahooFinanceProvider.php` | Ceny PSE akcií |
 | `bin/create-admin.php` | CLI seeder pro prvního admina |
+| `bin/fetch-prices.php` | Cron skript pro aktualizaci cen (`--force` přeskočí cooldown) |
 
 ## Nette konvence (důležité)
 
@@ -133,6 +143,8 @@ DB credentials: `config/local.neon` (gitignored).
 - **Delete s CSRF:** místo `handleDelete(int $id)` signálu použít `createComponentDeleteForm()` s `addProtection()` + `addHidden('id')` — JS nastavuje `[name="id"]` hodnotu před odesláním
 - **Nette Security role:** `$this->getUser()->isInRole('admin')` — metoda `getRole()` neexistuje, správně je `getRoles()` (vrací array) nebo `isInRole()`
 - **newDateTime: true gotcha:** s tímto nastavením vrací Nette Database datetime sloupce jako `Nette\Database\DateTime` (extends `DateTimeImmutable`) — nelze předat do `new \DateTimeImmutable($row->created_at)`, použít `\DateTimeImmutable::createFromInterface($row->created_at)`
+- **addText + Form::Float:** Nette po validaci automaticky přetypuje hodnotu na float — `str_replace(',', '.', $values->field)` selže (float není string); stačí přímý `(float) $values->field`
+- **file_get_contents + HTTPS:** CoinGecko (a jiná API) vrací 403 bez User-Agent; přidat `'header' => "User-Agent: SmartFunds/1.0\r\n"` do stream context — `curl` funguje, `file_get_contents` bez hlavičky ne
 
 ## Autentizace
 
@@ -145,9 +157,36 @@ DB credentials: `config/local.neon` (gitignored).
 - **Změna hesla investora:** `UserService::changeInvestorPassword(int $investorId, string $newPassword): bool` — vrací `false` pokud investor nemá účet
 - **První admin:** `docker compose exec app php bin/create-admin.php email heslo`
 
+## Investor stock portfolio & watchlist
+
+Funkce přidána v dubnu 2026. Investoři sledují akcie/ETF/krypto, ceny se cachují v DB přes cron.
+
+**Nové DB tabulky:** `securities`, `portfolio_positions`, `watchlist`, `security_prices`, `exchange_rates`
+
+**Admin:** `/admin/security` — CRUD katalogu cenných papírů, tlačítko "Aktualizovat ceny" (signál `fetchNow!`)
+
+**Investor dashboard** (`/investor`) — 3 taby Bootstrap:
+- **Transakce do fondů** — stávající data
+- **Portfolio akcií** — pozice s aktuální cenou, hodnotou v CZK a P&L %; AJAX modal "+ Přidat nákup"
+- **Watchlist** — sledované papíry s aktuální cenou; AJAX modal "+ Přidat"
+
+**Ceny a kurzy:**
+- `bin/fetch-prices.php` — spouštět cronem (1× denně); `--force` přeskočí 23h cooldown
+- Alpha Vantage: US akcie/ETF + USD→CZK kurz; klíč v `config/local.neon` → `parameters.alphavantage.apiKey`
+- CoinGecko: krypto bez API klíče (vyžaduje User-Agent)
+- Yahoo Finance: PSE akcie
+- EUR→CZK: Alpha Vantage zatím fetchuje jen USD→CZK; ostatní měny zobrazí `—`
+
+**Klíčový gotcha — `local.neon`** musí mít:
+```neon
+parameters:
+    alphavantage:
+        apiKey: 'VÁŠ_KLÍČ'
+```
+
 ## DB schéma
 
-- Soubor: `db/schema.sql` — tabulky `funds`, `investors`, `transactions`, `users` (MariaDB InnoDB, utf8mb4)
+- Soubor: `db/schema.sql` — tabulky `funds`, `investors`, `transactions`, `users`, `securities`, `portfolio_positions`, `watchlist`, `security_prices`, `exchange_rates` (MariaDB InnoDB, utf8mb4)
 - Docker auto-import: `./db` je namountován jako `/docker-entrypoint-initdb.d` — spustí se při **prvním** startu (prázdný volume)
 - Ruční import do existujícího volume: `docker compose exec -T db mariadb -u USER -pPASS DBNAME < db/schema.sql`
 
@@ -161,7 +200,10 @@ DB credentials: `config/local.neon` (gitignored).
 - **Před deployem:** workflow spustí `composer install --no-dev --optimize-autoloader`
 - **Stav deploye:** akce si drží `.ftp-deploy-sync-state.json` na FTP serveru — nahrává jen změněné soubory
 
-## Co zatím není implementováno
+## Co zatím není implementováno / čeká
 
-- CSRF ochrana na front-end (delete signály jsou chráněné přes Nette Form `addProtection()`; admin modul vyžaduje přihlášení)
+- **Cron na Wedos:** nastavit cron job pro `php bin/fetch-prices.php` (1× denně) — bez toho se ceny neaktualizují automaticky
+- **EUR→CZK kurz:** AlphaVantageProvider fetchuje zatím jen USD→CZK; pozice v EUR zobrazují `—` v hodnotě CZK
+- **Alpha Vantage klíč na serveru:** přidat `parameters.alphavantage.apiKey` do `config/local.neon` na Wedos (gitignored, deploy nepřepíše)
+- **CSRF ochrana na front-end** (delete signály jsou chráněné přes Nette Form `addProtection()`; admin modul vyžaduje přihlášení)
 - Investor dashboard — zobrazení jmen fondů čerpá z FundService (ActiveRows, ne entity) — intentionally
