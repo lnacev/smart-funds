@@ -96,4 +96,34 @@ final class UserService
         $this->userRepository->updatePassword($user->id, $this->passwords->hash($newPassword));
         return true;
     }
+
+    public function assignUserToInvestor(int $investorId, string $password): void
+    {
+        $investor = $this->investorRepository->findById($investorId);
+        if ($investor === null) {
+            throw new \InvalidArgumentException('Investor neexistuje.');
+        }
+
+        $existing = $this->userRepository->findByInvestorId($investorId);
+        if ($existing !== null) {
+            throw new \InvalidArgumentException('Investor již má uživatelský účet.');
+        }
+
+        $user = new User(
+            id:           null,
+            email:        $investor->email,
+            passwordHash: $this->passwords->hash($password),
+            role:         'investor',
+            investorId:   $investorId,
+            createdAt:    new \DateTimeImmutable(),
+        );
+
+        $this->userRepository->save($user);
+    }
+
+    /** @return int[] */
+    public function getInvestorIdsWithAccounts(): array
+    {
+        return $this->userRepository->findInvestorIdsWithAccounts();
+    }
 }
