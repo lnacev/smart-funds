@@ -74,7 +74,7 @@ final class PortfolioRepository implements PortfolioRepositoryInterface
             quantity:         (float) $row->quantity,
             purchasePrice:    (float) $row->purchase_price,
             purchaseCurrency: $row->purchase_currency,
-            purchasedAt:      new DateTimeImmutable($row->purchased_at),
+            purchasedAt:      DateTimeImmutable::createFromInterface($row->purchased_at),
             note:             $row->note,
             createdAt:        DateTimeImmutable::createFromInterface($row->created_at),
         );

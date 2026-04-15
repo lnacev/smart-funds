@@ -94,8 +94,7 @@ final class DashboardPresenter extends BaseInvestorPresenter
         }
 
         $form = new Form;
-        $form->addHidden('security_id')->setRequired();
-        $form->addSelect('security_id_display', 'Cenný papír', $options)
+        $form->addSelect('security_id', 'Cenný papír', $options)
             ->setRequired('Vyberte cenný papír.');
         $form->addText('quantity', 'Počet kusů')
             ->setRequired('Zadejte počet.')
@@ -123,8 +122,8 @@ final class DashboardPresenter extends BaseInvestorPresenter
             $this->portfolioService->addPosition(
                 $investorId,
                 (int) $values->security_id,
-                (float) str_replace(',', '.', $values->quantity),
-                (float) str_replace(',', '.', $values->purchase_price),
+                (float) $values->quantity,
+                (float) $values->purchase_price,
                 $values->purchase_currency,
                 $values->purchased_at,
                 $values->note !== '' ? $values->note : null,
