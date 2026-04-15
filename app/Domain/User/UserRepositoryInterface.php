@@ -17,4 +17,7 @@ interface UserRepositoryInterface
     public function deleteByInvestorId(int $investorId): void;
 
     public function updatePassword(int $userId, string $hash): void;
+
+    /** @return int[] */
+    public function findInvestorIdsWithAccounts(): array;
 }

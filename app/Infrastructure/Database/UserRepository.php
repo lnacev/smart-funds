@@ -80,6 +80,14 @@ final class UserRepository implements UserRepositoryInterface
             ->update(['password_hash' => $hash]);
     }
 
+    public function findInvestorIdsWithAccounts(): array
+    {
+        return $this->database
+            ->table('users')
+            ->where('investor_id IS NOT NULL')
+            ->fetchPairs(null, 'investor_id');
+    }
+
     private function rowToUser(\Nette\Database\Table\ActiveRow $row): User
     {
         return new User(
