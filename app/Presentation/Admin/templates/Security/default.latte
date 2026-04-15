@@ -1,0 +1,144 @@
+{layout '../@layout.latte'}
+{block title}Cenné papíry — Smart Funds Admin{/block}
+{block content}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Cenné papíry</h2>
+    <div class="d-flex gap-2">
+        <a n:href="fetchNow!" class="btn btn-outline-secondary">
+            Aktualizovat ceny
+        </a>
+        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#securityModal"
+                onclick="openSecurityModal(null)">
+            + Přidat
+        </button>
+    </div>
+</div>
+
+{snippet list}
+<table class="table table-striped table-bordered">
+    <thead class="table-dark">
+        <tr>
+            <th>Ticker</th>
+            <th>Název</th>
+            <th>Typ</th>
+            <th>Burza</th>
+            <th>Měna</th>
+            <th>Provider</th>
+            <th>API Symbol</th>
+            <th>Aktivní</th>
+            <th>Akce</th>
+        </tr>
+    </thead>
+    <tbody>
+        {foreach $securities as $s}
+        <tr>
+            <td><strong>{$s->ticker}</strong></td>
+            <td>{$s->name}</td>
+            <td>{$s->type}</td>
+            <td>{$s->exchange}</td>
+            <td>{$s->currency}</td>
+            <td>{$s->provider}</td>
+            <td><code>{$s->provider_symbol}</code></td>
+            <td>
+                {if $s->active}
+                    <span class="badge bg-success">Ano</span>
+                {else}
+                    <span class="badge bg-secondary">Ne</span>
+                {/if}
+            </td>
+            <td>
+                <button class="btn btn-sm btn-outline-secondary"
+                        data-bs-toggle="modal" data-bs-target="#securityModal"
+                        onclick="openSecurityModal({$s->id}, {$s->name|json}, {$s->exchange|json}, {$s->provider_symbol|json}, {$s->active ? 'true' : 'false'})">
+                    Upravit
+                </button>
+                <button class="btn btn-sm btn-outline-danger ms-1"
+                        data-bs-toggle="modal" data-bs-target="#deleteModal"
+                        data-id="{$s->id}">
+                    Smazat
+                </button>
+            </td>
+        </tr>
+        {else}
+        <tr><td colspan="9" class="text-center text-muted">Žádné cenné papíry. Přidejte první.</td></tr>
+        {/foreach}
+    </tbody>
+</table>
+{/snippet}
+
+{* --- Security Modal --- *}
+{snippet modal}
+<div class="modal fade" id="securityModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="securityModalLabel">Cenný papír</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                {control securityForm}
+            </div>
+        </div>
+    </div>
+</div>
+{/snippet}
+
+{* --- Delete Modal --- *}
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog modal-sm">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Smazat?</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Opravdu smazat tento cenný papír?</p>
+                {control deleteForm}
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function openSecurityModal(id, name, exchange, providerSymbol, active) {
+    const form = document.querySelector('#securityModal form');
+    if (!id) {
+        form.reset();
+        form.querySelector('[name="id"]').value = '';
+        document.getElementById('securityModalLabel').textContent = 'Přidat cenný papír';
+        ['ticker','type','currency','provider'].forEach(f => {
+            const el = form.querySelector('[name="' + f + '"]');
+            if (el) el.disabled = false;
+        });
+    } else {
+        form.querySelector('[name="id"]').value = id;
+        form.querySelector('[name="name"]').value = name;
+        form.querySelector('[name="exchange"]').value = exchange;
+        form.querySelector('[name="provider_symbol"]').value = providerSymbol;
+        form.querySelector('[name="active"]').checked = active === true || active === 'true';
+        document.getElementById('securityModalLabel').textContent = 'Upravit cenný papír';
+        ['ticker','type','currency','provider'].forEach(f => {
+            const el = form.querySelector('[name="' + f + '"]');
+            if (el) el.disabled = true;
+        });
+    }
+    bootstrap.Modal.getOrCreateInstance(document.getElementById('securityModal')).show();
+}
+
+document.querySelectorAll('[data-bs-target="#deleteModal"]').forEach(btn => {
+    btn.addEventListener('click', () => {
+        document.querySelector('#deleteModal [name="id"]').value = btn.dataset.id;
+    });
+});
+
+document.addEventListener('naja:success', e => {
+    if (e.detail?.payload?.closeModal) {
+        document.querySelectorAll('.modal.show').forEach(m =>
+            bootstrap.Modal.getOrCreateInstance(m).hide()
+        );
+    }
+});
+</script>
+
+{/block}
