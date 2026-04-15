@@ -7,6 +7,7 @@ namespace App\Application\Security;
 use App\Domain\Security\Security;
 use App\Domain\Security\SecurityRepositoryInterface;
 use DateTimeImmutable;
+use InvalidArgumentException;
 
 final class SecurityService
 {
@@ -60,7 +61,7 @@ final class SecurityService
     {
         $existing = $this->securityRepository->findById($id);
         if ($existing === null) {
-            throw new \InvalidArgumentException("Security $id nenalezeno.");
+            throw new InvalidArgumentException("Security $id nenalezeno.");
         }
 
         $updated = new Security(
