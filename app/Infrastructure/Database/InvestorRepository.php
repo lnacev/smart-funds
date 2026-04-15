@@ -36,7 +36,7 @@ final class InvestorRepository implements InvestorRepositoryInterface
             id: $row->id,
             name: $row->name,
             email: $row->email,
-            createdAt: new \DateTimeImmutable($row->created_at),
+            createdAt: \DateTimeImmutable::createFromInterface($row->created_at),
         );
     }
 
