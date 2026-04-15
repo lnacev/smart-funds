@@ -6,6 +6,7 @@ namespace App\Presentation\Admin\Presenters;
 
 use App\Application\Prices\PriceFetcherService;
 use App\Application\Security\SecurityService;
+use App\Infrastructure\Providers\AlphaVantageProvider;
 use Nette\Application\UI\Form;
 
 final class SecurityPresenter extends BaseAdminPresenter
@@ -13,12 +14,33 @@ final class SecurityPresenter extends BaseAdminPresenter
     public function __construct(
         private readonly SecurityService $securityService,
         private readonly PriceFetcherService $priceFetcherService,
+        private readonly AlphaVantageProvider $alphaVantage,
     ) {
     }
 
     public function actionDefault(): void
     {
         $this->template->securities = $this->securityService->getAll();
+    }
+
+    public function handleSearchTicker(string $q = ''): void
+    {
+        if (\strlen($q) < 2) {
+            $this->sendJson([]);
+        }
+
+        $matches = $this->alphaVantage->searchSymbols($q);
+        $out = [];
+        foreach ($matches as $m) {
+            $out[] = [
+                'symbol'   => $m['1. symbol'] ?? '',
+                'name'     => $m['2. name'] ?? '',
+                'type'     => $m['3. type'] ?? '',
+                'region'   => $m['4. region'] ?? '',
+                'currency' => $m['8. currency'] ?? 'USD',
+            ];
+        }
+        $this->sendJson($out);
     }
 
     public function handleFetchNow(): void

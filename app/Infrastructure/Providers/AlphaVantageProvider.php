@@ -74,6 +74,21 @@ final class AlphaVantageProvider implements PriceProviderInterface
         return $rates;
     }
 
+    /**
+     * @return array<int, array<string, string>>
+     */
+    public function searchSymbols(string $query): array
+    {
+        $url = self::BASE_URL . '?' . \http_build_query([
+            'function' => 'SYMBOL_SEARCH',
+            'keywords' => $query,
+            'apikey'   => $this->apiKey,
+        ]);
+
+        $data = $this->httpGet($url);
+        return $data['bestMatches'] ?? [];
+    }
+
     private function httpGet(string $url): ?array
     {
         $ctx = \stream_context_create(['http' => ['timeout' => 10]]);

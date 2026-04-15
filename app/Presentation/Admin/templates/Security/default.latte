@@ -71,6 +71,8 @@
 </table>
 {/snippet}
 
+<span id="js-ticker-search" data-url="{link searchTicker!}" style="display:none"></span>
+
 {* --- Security Modal --- *}
 {snippet modal}
 <div class="modal fade" id="securityModal" tabindex="-1">
@@ -115,6 +117,7 @@ function openSecurityModal(btn) {
             const el = form.querySelector('[name="' + f + '"]');
             if (el) el.disabled = false;
         });
+        hideTickerDropdown();
     } else {
         const d = btn.dataset;
         form.querySelector('[name="id"]').value = d.id;
@@ -127,6 +130,7 @@ function openSecurityModal(btn) {
             const el = form.querySelector('[name="' + f + '"]');
             if (el) el.disabled = true;
         });
+        hideTickerDropdown();
     }
     bootstrap.Modal.getOrCreateInstance(document.getElementById('securityModal')).show();
 }
@@ -149,6 +153,113 @@ document.addEventListener('naja:success', e => {
         );
     }
 });
+
+// --- Ticker autocomplete ---
+(function () {
+    const searchBase = document.getElementById('js-ticker-search').dataset.url;
+    let debounceTimer = null;
+    let acDropdown = null;
+
+    // Mapování AV regionu → burza + provider
+    function regionToExchangeProvider(region, avType) {
+        if (region.includes('Czech') || region.includes('Prague')) return ['PSE', 'yahoo'];
+        if (region.includes('United Kingdom') || region.includes('London')) return ['LSE', 'yahoo'];
+        if (region.includes('Germany') || region.includes('Frankfurt')) return ['XETRA', 'yahoo'];
+        if (region.includes('Canada')) return ['TSX', 'yahoo'];
+        if (region.includes('France')) return ['EURONEXT', 'yahoo'];
+        return ['NYSE', 'alpha_vantage'];
+    }
+
+    function avTypeToLocal(avType) {
+        if (avType === 'ETF') return 'etf';
+        return 'stock';
+    }
+
+    function hideTickerDropdown() {
+        if (acDropdown) acDropdown.style.display = 'none';
+    }
+    window.hideTickerDropdown = hideTickerDropdown;
+
+    function initAutocomplete() {
+        const form = document.querySelector('#securityModal form');
+        if (!form) return;
+
+        const tickerInput = form.querySelector('[name="ticker"]');
+        if (!tickerInput || tickerInput.dataset.acInit) return;
+        tickerInput.dataset.acInit = '1';
+        tickerInput.setAttribute('autocomplete', 'off');
+
+        // Dropdown container
+        const wrapper = tickerInput.parentElement;
+        wrapper.style.position = 'relative';
+
+        acDropdown = document.createElement('ul');
+        acDropdown.className = 'list-group shadow position-absolute w-100';
+        acDropdown.style.cssText = 'display:none;z-index:9999;max-height:220px;overflow-y:auto;top:100%;left:0';
+        wrapper.appendChild(acDropdown);
+
+        tickerInput.addEventListener('input', () => {
+            clearTimeout(debounceTimer);
+            const q = tickerInput.value.trim();
+            // Jen pro nový záznam (id prázdné)
+            if (q.length < 2 || form.querySelector('[name="id"]').value !== '') {
+                hideTickerDropdown();
+                return;
+            }
+            debounceTimer = setTimeout(() => fetchSuggestions(q, form), 400);
+        });
+
+        document.addEventListener('click', (e) => {
+            if (!tickerInput.contains(e.target) && !acDropdown.contains(e.target)) {
+                hideTickerDropdown();
+            }
+        });
+    }
+
+    function fetchSuggestions(q, form) {
+        fetch(searchBase + '&q=' + encodeURIComponent(q))
+            .then(r => r.json())
+            .then(data => renderDropdown(data, form))
+            .catch(() => hideTickerDropdown());
+    }
+
+    function renderDropdown(results, form) {
+        acDropdown.innerHTML = '';
+        if (!results.length) { hideTickerDropdown(); return; }
+
+        results.forEach(r => {
+            const [exchange, provider] = regionToExchangeProvider(r.region, r.type);
+            const li = document.createElement('li');
+            li.className = 'list-group-item list-group-item-action py-1 px-2';
+            li.style.cursor = 'pointer';
+            li.innerHTML =
+                '<strong>' + r.symbol + '</strong> ' +
+                '<small class="text-muted">' + r.name + ' &middot; ' + (r.region || '') + ' &middot; ' + r.currency + '</small>';
+            li.addEventListener('mousedown', (e) => {
+                e.preventDefault(); // neztrácet focus z inputu
+                form.querySelector('[name="ticker"]').value = r.symbol;
+                form.querySelector('[name="name"]').value = r.name;
+                form.querySelector('[name="exchange"]').value = exchange;
+                form.querySelector('[name="currency"]').value = r.currency;
+                form.querySelector('[name="provider_symbol"]').value = r.symbol;
+                const typeEl = form.querySelector('[name="type"]');
+                if (typeEl) typeEl.value = avTypeToLocal(r.type);
+                const provEl = form.querySelector('[name="provider"]');
+                if (provEl) provEl.value = provider;
+                hideTickerDropdown();
+            });
+            acDropdown.appendChild(li);
+        });
+        acDropdown.style.display = 'block';
+    }
+
+    // Inicializace při každém otevření modalu (i po AJAX překreslení)
+    document.getElementById('securityModal').addEventListener('shown.bs.modal', initAutocomplete);
+    document.addEventListener('naja:complete', () => {
+        if (acDropdown) acDropdown = null; // snippet byl přemalován, reset
+        initAutocomplete();
+    });
+})();
 </script>
 
 {/block}
