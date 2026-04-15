@@ -35,12 +35,21 @@
                         onclick="openInvestorModal(this)">
                     Upravit
                 </button>
+                {if isset($investorIdsWithAccount[$investor->id])}
                 <button type="button" class="btn btn-sm btn-outline-secondary"
                         data-id="{$investor->id}"
                         data-name="{$investor->name}"
                         onclick="openPasswordModal(this)">
                     Heslo
                 </button>
+                {else}
+                <button type="button" class="btn btn-sm btn-outline-warning"
+                        data-id="{$investor->id}"
+                        data-name="{$investor->name}"
+                        onclick="openAssignUserModal(this)">
+                    Přiřadit účet
+                </button>
+                {/if}
                 <button type="button" class="btn btn-sm btn-outline-danger"
                         data-id="{$investor->id}"
                         data-name="{$investor->name}"
@@ -106,6 +115,22 @@
     </div>
 </div>
 
+<div class="modal fade" id="assignUserModal" tabindex="-1" aria-labelledby="assignUserModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="assignUserModalLabel">Přiřadit účet</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            {snippet assignUserModal}
+            <div class="modal-body">
+                {control assignUserForm}
+            </div>
+            {/snippet}
+        </div>
+    </div>
+</div>
+
 {/block}
 
 {block scripts}
@@ -140,6 +165,15 @@ function openPasswordModal(btn) {
     document.getElementById('passwordModalLabel').textContent = 'Změna hesla: ' + btn.dataset.name;
     modal.querySelector('[name="new_password"]').value = '';
     modal.querySelector('[name="new_password_confirm"]').value = '';
+    bootstrap.Modal.getOrCreateInstance(modal).show();
+}
+
+function openAssignUserModal(btn) {
+    const modal = document.getElementById('assignUserModal');
+    modal.querySelector('[name="id"]').value = btn.dataset.id;
+    document.getElementById('assignUserModalLabel').textContent = 'Přiřadit účet: ' + btn.dataset.name;
+    modal.querySelector('[name="password"]').value = '';
+    modal.querySelector('[name="password_confirm"]').value = '';
     bootstrap.Modal.getOrCreateInstance(modal).show();
 }
 </script>
