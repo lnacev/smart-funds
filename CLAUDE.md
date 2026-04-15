@@ -41,9 +41,9 @@ Presentery volají pouze Application services, ne přímo repositáře.
 |-----|-------|-----------|
 | `/` | Front | Home |
 | `/admin` | Admin | Dashboard |
-| `/admin/funds` | Admin | Fund |
-| `/admin/investors` | Admin | Investor |
-| `/admin/transactions` | Admin | Transaction |
+| `/admin/fund` | Admin | Fund |
+| `/admin/investor` | Admin | Investor |
+| `/admin/transaction` | Admin | Transaction |
 | `/investor` | Investor | Dashboard |
 | `/sign/in` | Front | Sign (login) |
 | `/sign/out` | Front | Sign (logout) |
@@ -101,7 +101,7 @@ DB credentials: `config/local.neon` (gitignored).
 | `db/schema.sql` | DDL schéma: tabulky funds, investors, transactions, users |
 | `app/Infrastructure/RouterFactory.php` | Definice URL rout |
 | `app/Domain/User/` | User entita + UserRepositoryInterface |
-| `app/Application/User/UserService.php` | Vytváření admin/investor účtů, update, delete |
+| `app/Application/User/UserService.php` | Vytváření admin/investor účtů, update, delete, změna hesla, přiřazení účtu k historickému investorovi |
 | `app/Application/User/Authenticator.php` | Nette Security authenticator (email + heslo) |
 | `app/Infrastructure/Database/UserRepository.php` | DB implementace UserRepositoryInterface |
 | `app/Application/Dashboard/DashboardService.php` | Globální stats + per-fond agregace pro admin dashboard |
@@ -141,6 +141,8 @@ DB credentials: `config/local.neon` (gitignored).
 - **Admin** → `:Admin:Dashboard:default`, **investor** → `:Investor:Dashboard:default`
 - **Ochrana modulů:** `checkRequirements()` v `BaseAdminPresenter` / `BaseInvestorPresenter` volá `isInRole()`
 - **Vytvoření investora:** admin vyplní jméno + email + heslo → `UserService::createInvestor()` → atomicky vytvoří `investors` + `users` záznam
+- **Přiřazení účtu k historickému investorovi:** `UserService::assignUserToInvestor(int $investorId, string $password)` — vytvoří `users` záznam pro existujícího investora bez účtu; email přebírá z `investors.email`; v šabloně podmíněné tlačítko (`isset($investorIdsWithAccount[$investor->id])`)
+- **Změna hesla investora:** `UserService::changeInvestorPassword(int $investorId, string $newPassword): bool` — vrací `false` pokud investor nemá účet
 - **První admin:** `docker compose exec app php bin/create-admin.php email heslo`
 
 ## DB schéma
@@ -161,7 +163,5 @@ DB credentials: `config/local.neon` (gitignored).
 
 ## Co zatím není implementováno
 
-- Změna hesla pro investora přes admin panel
-- Přiřazení user účtu k existujícímu investorskému záznamu (historická data bez účtu)
 - CSRF ochrana na front-end (delete signály jsou chráněné přes Nette Form `addProtection()`; admin modul vyžaduje přihlášení)
 - Investor dashboard — zobrazení jmen fondů čerpá z FundService (ActiveRows, ne entity) — intentionally
