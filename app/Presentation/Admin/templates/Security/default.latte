@@ -8,8 +8,8 @@
         <a n:href="fetchNow!" class="btn btn-outline-secondary">
             Aktualizovat ceny
         </a>
-        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#securityModal"
-                onclick="openSecurityModal(null)">
+        <button class="btn btn-primary js-add-security"
+                data-bs-toggle="modal" data-bs-target="#securityModal">
             + Přidat
         </button>
     </div>
@@ -48,9 +48,13 @@
                 {/if}
             </td>
             <td>
-                <button class="btn btn-sm btn-outline-secondary"
+                <button class="btn btn-sm btn-outline-secondary js-edit-security"
                         data-bs-toggle="modal" data-bs-target="#securityModal"
-                        onclick="openSecurityModal({$s->id}, {$s->name|json}, {$s->exchange|json}, {$s->provider_symbol|json}, {$s->active ? 'true' : 'false'})">
+                        data-id="{$s->id}"
+                        data-name="{$s->name}"
+                        data-exchange="{$s->exchange}"
+                        data-provider-symbol="{$s->provider_symbol}"
+                        data-active="{$s->active ? 'true' : 'false'}">
                     Upravit
                 </button>
                 <button class="btn btn-sm btn-outline-danger ms-1"
@@ -101,9 +105,9 @@
 </div>
 
 <script>
-function openSecurityModal(id, name, exchange, providerSymbol, active) {
+function openSecurityModal(btn) {
     const form = document.querySelector('#securityModal form');
-    if (!id) {
+    if (!btn) {
         form.reset();
         form.querySelector('[name="id"]').value = '';
         document.getElementById('securityModalLabel').textContent = 'Přidat cenný papír';
@@ -112,11 +116,12 @@ function openSecurityModal(id, name, exchange, providerSymbol, active) {
             if (el) el.disabled = false;
         });
     } else {
-        form.querySelector('[name="id"]').value = id;
-        form.querySelector('[name="name"]').value = name;
-        form.querySelector('[name="exchange"]').value = exchange;
-        form.querySelector('[name="provider_symbol"]').value = providerSymbol;
-        form.querySelector('[name="active"]').checked = active === true || active === 'true';
+        const d = btn.dataset;
+        form.querySelector('[name="id"]').value = d.id;
+        form.querySelector('[name="name"]').value = d.name;
+        form.querySelector('[name="exchange"]').value = d.exchange;
+        form.querySelector('[name="provider_symbol"]').value = d.providerSymbol;
+        form.querySelector('[name="active"]').checked = d.active === 'true';
         document.getElementById('securityModalLabel').textContent = 'Upravit cenný papír';
         ['ticker','type','currency','provider'].forEach(f => {
             const el = form.querySelector('[name="' + f + '"]');
@@ -125,6 +130,11 @@ function openSecurityModal(id, name, exchange, providerSymbol, active) {
     }
     bootstrap.Modal.getOrCreateInstance(document.getElementById('securityModal')).show();
 }
+
+document.querySelector('.js-add-security')?.addEventListener('click', () => openSecurityModal(null));
+document.querySelectorAll('.js-edit-security').forEach(btn => {
+    btn.addEventListener('click', () => openSecurityModal(btn));
+});
 
 document.querySelectorAll('[data-bs-target="#deleteModal"]').forEach(btn => {
     btn.addEventListener('click', () => {

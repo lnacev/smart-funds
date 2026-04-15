@@ -26,7 +26,10 @@ final class CoinGeckoProvider implements PriceProviderInterface
             'vs_currencies' => 'usd',
         ]);
 
-        $ctx = \stream_context_create(['http' => ['timeout' => 10]]);
+        $ctx = \stream_context_create(['http' => [
+            'timeout' => 10,
+            'header'  => "User-Agent: SmartFunds/1.0\r\n",
+        ]]);
         $response = @\file_get_contents($url, false, $ctx);
         if ($response === false) {
             return [];
