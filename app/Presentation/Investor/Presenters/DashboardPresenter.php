@@ -11,6 +11,7 @@ use App\Application\Prices\PriceService;
 use App\Application\Security\SecurityService;
 use App\Application\Watchlist\WatchlistService;
 use App\Domain\Transaction\TransactionRepositoryInterface;
+use App\Infrastructure\Providers\AlphaVantageProvider;
 use Nette\Application\UI\Form;
 
 final class DashboardPresenter extends BaseInvestorPresenter
@@ -23,6 +24,7 @@ final class DashboardPresenter extends BaseInvestorPresenter
         private readonly SecurityService $securityService,
         private readonly PriceService $priceService,
         private readonly PriceFetcherService $priceFetcherService,
+        private readonly AlphaVantageProvider $alphaVantage,
     ) {
     }
 
@@ -54,9 +56,6 @@ final class DashboardPresenter extends BaseInvestorPresenter
         // -- Watchlist --
         $this->template->watchlist = $this->watchlistService->getWatchlistWithPrices($investorId);
 
-        // -- Securities pro formuláře --
-        $this->template->availableSecurities = $this->securityService->getAllActive();
-
         // -- Stav cen --
         $this->template->priceService = $this->priceService;
 
@@ -65,6 +64,26 @@ final class DashboardPresenter extends BaseInvestorPresenter
         $lastRefresh = $session->get('lastRefresh');
         $this->template->canRefresh = $lastRefresh === null
             || (time() - $lastRefresh) > 3600;
+    }
+
+    public function handleSearchTicker(string $q = ''): void
+    {
+        if (\strlen($q) < 2) {
+            $this->sendJson([]);
+        }
+
+        $matches = $this->alphaVantage->searchSymbols($q);
+        $out = [];
+        foreach ($matches as $m) {
+            $out[] = [
+                'symbol'   => $m['1. symbol'] ?? '',
+                'name'     => $m['2. name'] ?? '',
+                'type'     => $m['3. type'] ?? '',
+                'region'   => $m['4. region'] ?? '',
+                'currency' => $m['8. currency'] ?? 'USD',
+            ];
+        }
+        $this->sendJson($out);
     }
 
     public function handleRefreshPrices(): void
@@ -87,15 +106,17 @@ final class DashboardPresenter extends BaseInvestorPresenter
 
     protected function createComponentAddPositionForm(): Form
     {
-        $securities = $this->securityService->getAllActive();
-        $options = [];
-        foreach ($securities as $s) {
-            $options[$s->id] = "{$s->ticker} — {$s->name}";
-        }
-
         $form = new Form;
-        $form->addSelect('security_id', 'Cenný papír', $options)
-            ->setRequired('Vyberte cenný papír.');
+        $form->addText('ticker', 'Ticker')
+            ->setRequired('Zadejte ticker.')
+            ->setHtmlAttribute('placeholder', 'Hledat ticker…')
+            ->setHtmlAttribute('autocomplete', 'off');
+        $form->addHidden('security_name');
+        $form->addHidden('security_type');
+        $form->addHidden('security_exchange');
+        $form->addHidden('security_currency');
+        $form->addHidden('security_provider');
+        $form->addHidden('security_provider_symbol');
         $form->addText('quantity', 'Počet kusů')
             ->setRequired('Zadejte počet.')
             ->addRule(Form::Float, 'Musí být číslo.')
@@ -119,9 +140,20 @@ final class DashboardPresenter extends BaseInvestorPresenter
 
         $form->onSuccess[] = function (Form $form, \stdClass $values): void {
             $investorId = $this->getInvestorId();
+
+            $securityId = $this->securityService->findOrCreate(
+                $values->ticker,
+                $values->security_name ?: $values->ticker,
+                $values->security_type ?: 'stock',
+                $values->security_exchange ?: 'NYSE',
+                $values->security_currency ?: 'USD',
+                $values->security_provider ?: 'alpha_vantage',
+                $values->security_provider_symbol ?: $values->ticker,
+            );
+
             $this->portfolioService->addPosition(
                 $investorId,
-                (int) $values->security_id,
+                $securityId,
                 (float) $values->quantity,
                 (float) $values->purchase_price,
                 $values->purchase_currency,
@@ -153,22 +185,35 @@ final class DashboardPresenter extends BaseInvestorPresenter
 
     protected function createComponentAddWatchlistForm(): Form
     {
-        $securities = $this->securityService->getAllActive();
-        $options = [];
-        foreach ($securities as $s) {
-            $options[$s->id] = "{$s->ticker} — {$s->name}";
-        }
-
         $form = new Form;
-        $form->addSelect('security_id', 'Cenný papír', $options)
-            ->setRequired('Vyberte cenný papír.');
+        $form->addText('ticker', 'Ticker')
+            ->setRequired('Zadejte ticker.')
+            ->setHtmlAttribute('placeholder', 'Hledat ticker…')
+            ->setHtmlAttribute('autocomplete', 'off');
+        $form->addHidden('security_name');
+        $form->addHidden('security_type');
+        $form->addHidden('security_exchange');
+        $form->addHidden('security_currency');
+        $form->addHidden('security_provider');
+        $form->addHidden('security_provider_symbol');
         $form->addSubmit('save', 'Přidat')
             ->setHtmlAttribute('class', 'btn btn-primary');
         $form->getElementPrototype()->addClass('ajax');
 
         $form->onSuccess[] = function (Form $form, \stdClass $values): void {
             $investorId = $this->getInvestorId();
-            $this->watchlistService->add($investorId, (int) $values->security_id);
+
+            $securityId = $this->securityService->findOrCreate(
+                $values->ticker,
+                $values->security_name ?: $values->ticker,
+                $values->security_type ?: 'stock',
+                $values->security_exchange ?: 'NYSE',
+                $values->security_currency ?: 'USD',
+                $values->security_provider ?: 'alpha_vantage',
+                $values->security_provider_symbol ?: $values->ticker,
+            );
+
+            $this->watchlistService->add($investorId, $securityId);
 
             if ($this->isAjax()) {
                 $this->template->watchlist = $this->watchlistService->getWatchlistWithPrices($investorId);

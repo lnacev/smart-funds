@@ -85,4 +85,113 @@
     </div>
 </div>
 
+<span id="js-ticker-search" data-url="{link searchTicker!}" style="display:none"></span>
+
+<script>
+(function () {
+    var searchBase = document.getElementById('js-ticker-search').dataset.url;
+    var debounceTimer = null;
+
+    function regionToExchangeProvider(region) {
+        if (region.includes('Czech') || region.includes('Prague')) return ['PSE', 'yahoo'];
+        if (region.includes('United Kingdom') || region.includes('London')) return ['LSE', 'yahoo'];
+        if (region.includes('Germany') || region.includes('Frankfurt')) return ['XETRA', 'yahoo'];
+        if (region.includes('Canada')) return ['TSX', 'yahoo'];
+        if (region.includes('France')) return ['EURONEXT', 'yahoo'];
+        return ['NYSE', 'alpha_vantage'];
+    }
+
+    function avTypeToLocal(avType) {
+        return avType === 'ETF' ? 'etf' : 'stock';
+    }
+
+    function initTickerAutocomplete(modalId) {
+        var modal = document.getElementById(modalId);
+        if (!modal) return;
+        var form = modal.querySelector('form');
+        if (!form) return;
+        var tickerInput = form.querySelector('[name="ticker"]');
+        if (!tickerInput || tickerInput.dataset.acInit) return;
+        tickerInput.dataset.acInit = '1';
+
+        var wrapper = tickerInput.parentElement;
+        wrapper.style.position = 'relative';
+
+        var dropdown = document.createElement('ul');
+        dropdown.className = 'list-group shadow position-absolute w-100';
+        dropdown.style.cssText = 'display:none;z-index:9999;max-height:220px;overflow-y:auto;top:100%;left:0';
+        wrapper.appendChild(dropdown);
+
+        var infoEl = document.createElement('small');
+        infoEl.className = 'text-muted d-block mt-1';
+        wrapper.appendChild(infoEl);
+
+        tickerInput.addEventListener('input', function () {
+            clearTimeout(debounceTimer);
+            var q = tickerInput.value.trim();
+            if (q.length < 2) { dropdown.style.display = 'none'; infoEl.textContent = ''; return; }
+            debounceTimer = setTimeout(function () {
+                fetch(searchBase + '&q=' + encodeURIComponent(q))
+                    .then(function (r) { return r.json(); })
+                    .then(function (results) {
+                        dropdown.innerHTML = '';
+                        if (!results.length) { dropdown.style.display = 'none'; return; }
+                        results.forEach(function (r) {
+                            var ep = regionToExchangeProvider(r.region);
+                            var exchange = ep[0], provider = ep[1];
+                            var li = document.createElement('li');
+                            li.className = 'list-group-item list-group-item-action py-1 px-2';
+                            li.style.cursor = 'pointer';
+                            li.innerHTML = '<strong>' + r.symbol + '</strong> '
+                                + '<small class="text-muted">' + r.name + ' &middot; ' + (r.region || '') + ' &middot; ' + r.currency + '</small>';
+                            li.addEventListener('mousedown', function (e) {
+                                e.preventDefault();
+                                tickerInput.value = r.symbol;
+                                form.querySelector('[name="security_name"]').value = r.name;
+                                form.querySelector('[name="security_type"]').value = avTypeToLocal(r.type);
+                                form.querySelector('[name="security_exchange"]').value = exchange;
+                                form.querySelector('[name="security_currency"]').value = r.currency;
+                                form.querySelector('[name="security_provider"]').value = provider;
+                                form.querySelector('[name="security_provider_symbol"]').value = r.symbol;
+                                var currSelect = form.querySelector('[name="purchase_currency"]');
+                                if (currSelect) currSelect.value = r.currency;
+                                infoEl.textContent = r.name + ' (' + r.currency + ')';
+                                dropdown.style.display = 'none';
+                            });
+                            dropdown.appendChild(li);
+                        });
+                        dropdown.style.display = 'block';
+                    })
+                    .catch(function () { dropdown.style.display = 'none'; });
+            }, 400);
+        });
+
+        document.addEventListener('click', function (e) {
+            if (!tickerInput.contains(e.target) && !dropdown.contains(e.target)) {
+                dropdown.style.display = 'none';
+            }
+        });
+    }
+
+    ['addPositionModal', 'addWatchlistModal'].forEach(function (id) {
+        var el = document.getElementById(id);
+        if (el) el.addEventListener('shown.bs.modal', function () { initTickerAutocomplete(id); });
+    });
+
+    document.addEventListener('naja:complete', function () {
+        ['addPositionModal', 'addWatchlistModal'].forEach(function (id) {
+            initTickerAutocomplete(id);
+        });
+    });
+
+    document.addEventListener('naja:success', function (e) {
+        if (e.detail && e.detail.payload && e.detail.payload.closeModal) {
+            document.querySelectorAll('.modal.show').forEach(function (m) {
+                bootstrap.Modal.getOrCreateInstance(m).hide();
+            });
+        }
+    });
+})();
+</script>
+
 {/block}

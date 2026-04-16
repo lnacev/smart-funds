@@ -100,12 +100,3 @@
 </div>
 {/snippet}
 
-<script>
-document.addEventListener('naja:success', e => {
-    if (e.detail?.payload?.closeModal) {
-        document.querySelectorAll('.modal.show').forEach(m =>
-            bootstrap.Modal.getOrCreateInstance(m).hide()
-        );
-    }
-});
-</script>

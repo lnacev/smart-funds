@@ -33,6 +33,22 @@ final class SecurityService
         return $this->securityRepository->findById($id);
     }
 
+    public function findOrCreate(
+        string $ticker,
+        string $name,
+        string $type,
+        string $exchange,
+        string $currency,
+        string $provider,
+        string $providerSymbol,
+    ): int {
+        $existing = $this->securityRepository->findByTicker(\strtoupper(\trim($ticker)));
+        if ($existing !== null) {
+            return $existing->id;
+        }
+        return $this->create($ticker, $name, $type, $exchange, $currency, $provider, $providerSymbol);
+    }
+
     public function create(
         string $ticker,
         string $name,

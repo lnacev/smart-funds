@@ -106,7 +106,7 @@ DB credentials: `config/local.neon` (gitignored).
 | `app/Application/User/Authenticator.php` | Nette Security authenticator (email + heslo) |
 | `app/Infrastructure/Database/UserRepository.php` | DB implementace UserRepositoryInterface |
 | `app/Application/Dashboard/DashboardService.php` | Globální stats + per-fond agregace pro admin dashboard |
-| `app/Application/Security/SecurityService.php` | CRUD katalogu cenných papírů |
+| `app/Application/Security/SecurityService.php` | CRUD katalogu cenných papírů + `findOrCreate()` |
 | `app/Application/Portfolio/PortfolioService.php` | Správa portfoliových pozic investora + výpočet hodnoty |
 | `app/Application/Watchlist/WatchlistService.php` | Watchlist investora |
 | `app/Application/Prices/PriceService.php` | Čtení cen + kurzů z DB cache |
@@ -167,8 +167,10 @@ Funkce přidána v dubnu 2026. Investoři sledují akcie/ETF/krypto, ceny se cac
 
 **Investor dashboard** (`/investor`) — 3 taby Bootstrap:
 - **Transakce do fondů** — stávající data
-- **Portfolio akcií** — pozice s aktuální cenou, hodnotou v CZK a P&L %; AJAX modal "+ Přidat nákup"
-- **Watchlist** — sledované papíry s aktuální cenou; AJAX modal "+ Přidat"
+- **Portfolio akcií** — pozice s aktuální cenou, hodnotou v CZK a P&L %; AJAX modal "+ Přidat nákup" s ticker autocomplete (Alpha Vantage)
+- **Watchlist** — sledované papíry s aktuální cenou; AJAX modal "+ Přidat" s ticker autocomplete
+
+**Investor ticker autocomplete:** investor si sám vyhledá cenný papír přes autocomplete (signál `searchTicker!` v `Investor:Dashboard`), bez závislosti na adminovi. Při odeslání formuláře se papír automaticky vytvoří v `securities` pokud neexistuje (`SecurityService::findOrCreate()`). Měna nákupu se předvyplní z API, investor ji může přepsat. Sdílený JS autocomplete kód je v `default.latte` (obsluhuje oba modaly).
 
 **Ceny a kurzy:**
 - `bin/fetch-prices.php` — spouštět cronem (1× denně); `--force` přeskočí 23h cooldown
