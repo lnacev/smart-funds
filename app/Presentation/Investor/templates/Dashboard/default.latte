@@ -191,6 +191,18 @@
             });
         }
     });
+
+    // Pamatovat si aktivní záložku přes přesměrování
+    document.querySelectorAll('#dashboardTabs [data-bs-toggle="tab"]').forEach(function (link) {
+        link.addEventListener('shown.bs.tab', function (e) {
+            sessionStorage.setItem('sf_tab', e.target.getAttribute('href'));
+        });
+    });
+    var savedTab = sessionStorage.getItem('sf_tab');
+    if (savedTab) {
+        var tabEl = document.querySelector('#dashboardTabs [href="' + savedTab + '"]');
+        if (tabEl) bootstrap.Tab.getOrCreateInstance(tabEl).show();
+    }
 })();
 </script>
 

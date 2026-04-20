@@ -90,8 +90,14 @@ final class DashboardPresenter extends BaseInvestorPresenter
 
     public function handleRefreshPrices(): void
     {
+        $investorId = $this->getInvestorId();
+        $positions = $this->portfolioService->getPositionsWithValues($investorId);
+        $watchlist = $this->watchlistService->getWatchlistWithPrices($investorId);
+        $hasMissing = \array_filter($positions, fn($p) => $p['currentPrice'] === null) !== []
+            || \array_filter($watchlist, fn($w) => $w['currentPrice'] === null) !== [];
+
         $lastFetch = $this->priceService->getLastFetchedAt();
-        if ($lastFetch !== null && (time() - $lastFetch->getTimestamp()) < 3600) {
+        if (!$hasMissing && $lastFetch !== null && (time() - $lastFetch->getTimestamp()) < 3600) {
             $this->flashMessage('Ceny byly aktualizovány nedávno. Zkuste za hodinu.', 'warning');
             $this->redirect('default');
             return;
