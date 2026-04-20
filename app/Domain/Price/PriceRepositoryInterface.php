@@ -14,4 +14,6 @@ interface PriceRepositoryInterface
     public function findBySecurity(int $securityId): ?array;
 
     public function upsert(int $securityId, float $price, string $currency, DateTimeImmutable $fetchedAt): void;
+
+    public function findLastFetchedAt(): ?DateTimeImmutable;
 }

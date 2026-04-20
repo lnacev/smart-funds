@@ -17,6 +17,8 @@ Hybridní přístup: admin spravuje vše, investoři vidí svá data.
 
 **Wedos webhosting** — Apache + mod_php, PHP 8.5, MariaDB. Docker lokálně simuluje totéž prostředí.
 
+**Produkční URL:** https://smart-funds.cz/ — použít pro testování na produkčním systému.
+
 ## Architektura
 
 **DDD-inspirovaná čtyřvrstvá architektura:**

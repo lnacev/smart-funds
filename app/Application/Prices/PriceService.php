@@ -40,6 +40,11 @@ final class PriceService
         return $rate !== null ? $amount * $rate : null;
     }
 
+    public function getLastFetchedAt(): ?DateTimeImmutable
+    {
+        return $this->priceRepository->findLastFetchedAt();
+    }
+
     public function isDataStale(?DateTimeImmutable $fetchedAt): bool
     {
         if ($fetchedAt === null) {

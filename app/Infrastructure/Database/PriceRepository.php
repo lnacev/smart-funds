@@ -32,6 +32,15 @@ final class PriceRepository implements PriceRepositoryInterface
         ];
     }
 
+    public function findLastFetchedAt(): ?DateTimeImmutable
+    {
+        $row = $this->database->query('SELECT MAX(fetched_at) AS last FROM security_prices')->fetch();
+        if ($row === null || $row->last === null) {
+            return null;
+        }
+        return DateTimeImmutable::createFromInterface($row->last);
+    }
+
     public function upsert(int $securityId, float $price, string $currency, DateTimeImmutable $fetchedAt): void
     {
         $this->database->query(

@@ -59,11 +59,10 @@ final class DashboardPresenter extends BaseInvestorPresenter
         // -- Stav cen --
         $this->template->priceService = $this->priceService;
 
-        // -- Refresh cooldown --
-        $session = $this->getSession('prices');
-        $lastRefresh = $session->get('lastRefresh');
-        $this->template->canRefresh = $lastRefresh === null
-            || (time() - $lastRefresh) > 3600;
+        // -- Refresh cooldown (globální, z DB) --
+        $lastFetch = $this->priceService->getLastFetchedAt();
+        $this->template->canRefresh = $lastFetch === null
+            || (time() - $lastFetch->getTimestamp()) > 3600;
     }
 
     public function handleSearchTicker(string $q = ''): void
@@ -88,17 +87,14 @@ final class DashboardPresenter extends BaseInvestorPresenter
 
     public function handleRefreshPrices(): void
     {
-        $session = $this->getSession('prices');
-        $lastRefresh = $session->get('lastRefresh');
-
-        if ($lastRefresh !== null && (time() - $lastRefresh) < 3600) {
+        $lastFetch = $this->priceService->getLastFetchedAt();
+        if ($lastFetch !== null && (time() - $lastFetch->getTimestamp()) < 3600) {
             $this->flashMessage('Ceny byly aktualizovány nedávno. Zkuste za hodinu.', 'warning');
             $this->redirect('default');
             return;
         }
 
         $result = $this->priceFetcherService->fetchAll(force: true);
-        $session->set('lastRefresh', time());
 
         $this->flashMessage("Ceny aktualizovány — OK: {$result['ok']}, Chyby: {$result['errors']}", 'success');
         $this->redirect('default');
