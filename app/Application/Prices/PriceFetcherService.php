@@ -65,7 +65,7 @@ final class PriceFetcherService
                     $stats['ok']++;
                 } else {
                     $stats['errors']++;
-                    \fwrite(\STDERR, "AlphaVantage: chyba pro {$symbol}\n");
+                    \error_log("AlphaVantage: chyba pro {$symbol}");
                 }
             }
         }
@@ -85,7 +85,7 @@ final class PriceFetcherService
                     $stats['ok']++;
                 } else {
                     $stats['errors']++;
-                    \fwrite(\STDERR, "CoinGecko: chyba pro {$symbol}\n");
+                    \error_log("CoinGecko: chyba pro {$symbol}");
                 }
             }
         }
@@ -105,7 +105,7 @@ final class PriceFetcherService
                     $stats['ok']++;
                 } else {
                     $stats['errors']++;
-                    \fwrite(\STDERR, "Yahoo: chyba pro {$symbol}\n");
+                    \error_log("Yahoo: chyba pro {$symbol}");
                 }
             }
         }
