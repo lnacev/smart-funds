@@ -61,7 +61,10 @@ final class DashboardPresenter extends BaseInvestorPresenter
 
         // -- Refresh cooldown (globální, z DB) --
         $lastFetch = $this->priceService->getLastFetchedAt();
-        $this->template->canRefresh = $lastFetch === null
+        $hasMissingPrices = \array_filter($positions, fn($p) => $p['currentPrice'] === null) !== []
+            || \array_filter($this->template->watchlist, fn($w) => $w['currentPrice'] === null) !== [];
+        $this->template->canRefresh = $hasMissingPrices
+            || $lastFetch === null
             || (time() - $lastFetch->getTimestamp()) > 3600;
     }
 
