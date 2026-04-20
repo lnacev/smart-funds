@@ -147,6 +147,10 @@ DB credentials: `config/local.neon` (gitignored).
 - **newDateTime: true gotcha:** s tímto nastavením vrací Nette Database datetime sloupce jako `Nette\Database\DateTime` (extends `DateTimeImmutable`) — nelze předat do `new \DateTimeImmutable($row->created_at)`, použít `\DateTimeImmutable::createFromInterface($row->created_at)`
 - **addText + Form::Float:** Nette po validaci automaticky přetypuje hodnotu na float — `str_replace(',', '.', $values->field)` selže (float není string); stačí přímý `(float) $values->field`
 - **file_get_contents + HTTPS:** CoinGecko (a jiná API) vrací 403 bez User-Agent; přidat `'header' => "User-Agent: SmartFunds/1.0\r\n"` do stream context — `curl` funguje, `file_get_contents` bez hlavičky ne
+- **STDERR v PHP:** konstanta `STDERR` existuje jen v CLI — ve web kontextu (presenter/service) vždy `\error_log(...)` místo `\fwrite(\STDERR, ...)`
+- **Bootstrap JS pořadí v layoutu:** `<script src="bootstrap...">` musí být **před** `{block content}` — inline skripty v content bloku jinak nemají `bootstrap.Tab` / `bootstrap.Modal` k dispozici
+- **Flash zprávy v Investor layoutu:** `{foreach $flashes as $flash}...{/foreach}` musí být v `@layout.latte`; bez toho se flash zprávy z presenterů nikdy nezobrazí
+- **Tab persistence přes redirect:** záložky Bootstrap dashboardu si pamatují stav přes `sessionStorage` (klíč `sf_tab`); obnovení v JS na load stránky — Bootstrap musí být načten před inline skriptem
 
 ## Autentizace
 
@@ -180,6 +184,19 @@ Funkce přidána v dubnu 2026. Investoři sledují akcie/ETF/krypto, ceny se cac
 - CoinGecko: krypto bez API klíče (vyžaduje User-Agent)
 - Yahoo Finance: PSE akcie
 - EUR→CZK: Alpha Vantage zatím fetchuje jen USD→CZK; ostatní měny zobrazí `—`
+
+**Alpha Vantage rate limit (free tier):**
+- Limit **25 requestů/den** — zahrnuje `GLOBAL_QUOTE`, `CURRENCY_EXCHANGE_RATE` i `SYMBOL_SEARCH`
+- Při překročení API vrátí `{"Information": "..."}` nebo `{"Note": "..."}` místo dat
+- `AlphaVantageProvider` detekuje tyto klíče, nastaví `$rateLimited = true` a přeruší batch
+- Flash zpráva zobrazí "denní limit vyčerpán" místo generického "Chyby: N"
+- Reset kvóty: každý den o půlnoci UTC
+
+**Investor dashboard — cooldown aktualizace cen:**
+- Cooldown uložen v DB jako `MAX(fetched_at)` z `security_prices` (globální, ne per-session)
+- Session-based cooldown **nefunguje** — Nette logout session nezničí, jen odstraní identitu
+- Tlačítko je vždy aktivní pokud má investor jakoukoliv pozici/watchlist bez ceny (`currentPrice === null`)
+- Handler `handleRefreshPrices` obejde cooldown stejnou podmínkou (soulad s tlačítkem)
 
 **Klíčový gotcha — `local.neon`** musí mít:
 ```neon
