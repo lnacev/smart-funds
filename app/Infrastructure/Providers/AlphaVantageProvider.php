@@ -13,6 +13,13 @@ final class AlphaVantageProvider implements PriceProviderInterface
     ) {
     }
 
+    private bool $rateLimited = false;
+
+    public function isRateLimited(): bool
+    {
+        return $this->rateLimited;
+    }
+
     public function fetchPrice(string $providerSymbol): ?array
     {
         $url = self::BASE_URL . '?' . \http_build_query([
@@ -23,6 +30,12 @@ final class AlphaVantageProvider implements PriceProviderInterface
 
         $data = $this->httpGet($url);
         if ($data === null) {
+            return null;
+        }
+
+        if (isset($data['Information']) || isset($data['Note'])) {
+            $this->rateLimited = true;
+            \error_log('AlphaVantage rate limit: ' . ($data['Information'] ?? $data['Note']));
             return null;
         }
 
@@ -40,11 +53,13 @@ final class AlphaVantageProvider implements PriceProviderInterface
     {
         $results = [];
         foreach ($symbols as $symbol) {
+            if ($this->rateLimited) {
+                break;
+            }
             $result = $this->fetchPrice($symbol);
             if ($result !== null) {
                 $results[$symbol] = $result;
             }
-            // Alpha Vantage free: max 5 req/min — krátká pauza
             \usleep(200_000);
         }
         return $results;

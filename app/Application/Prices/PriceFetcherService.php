@@ -112,6 +112,10 @@ final class PriceFetcherService
 
         $this->fetchExchangeRates();
 
+        if ($this->alphaVantage->isRateLimited()) {
+            $stats['rateLimited'] = true;
+        }
+
         return $stats;
     }
 

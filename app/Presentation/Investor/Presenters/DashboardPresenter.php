@@ -105,7 +105,11 @@ final class DashboardPresenter extends BaseInvestorPresenter
 
         $result = $this->priceFetcherService->fetchAll(force: true);
 
-        $this->flashMessage("Ceny aktualizovány — OK: {$result['ok']}, Chyby: {$result['errors']}", 'success');
+        if (!empty($result['rateLimited'])) {
+            $this->flashMessage('Alpha Vantage: denní limit API volání byl vyčerpán. Zkuste zítra.', 'warning');
+        } else {
+            $this->flashMessage("Ceny aktualizovány — OK: {$result['ok']}, Chyby: {$result['errors']}", $result['errors'] > 0 ? 'warning' : 'success');
+        }
         $this->redirect('default');
     }
 
